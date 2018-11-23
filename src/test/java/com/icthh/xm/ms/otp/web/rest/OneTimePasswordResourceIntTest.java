@@ -8,6 +8,7 @@ import com.icthh.xm.ms.otp.OtpApp;
 import com.icthh.xm.ms.otp.config.SecurityBeanOverrideConfiguration;
 import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.impl.OneTimePasswordServiceImpl;
 import com.icthh.xm.ms.otp.web.rest.errors.ExceptionTranslator;
@@ -65,6 +66,9 @@ public class OneTimePasswordResourceIntTest {
     private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
 
     @Autowired
+    private OneTimePasswordRepository oneTimePasswordRepository;
+
+    @Autowired
     private ExceptionTranslator exceptionTranslator;
 
     @Autowired
@@ -78,7 +82,8 @@ public class OneTimePasswordResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        OneTimePasswordServiceImpl oneTimePswd = new OneTimePasswordServiceImpl(null, null);
+        OneTimePasswordServiceImpl oneTimePswd = new OneTimePasswordServiceImpl(oneTimePasswordRepository,
+            null);
         OneTimePasswordResource otp = new OneTimePasswordResource(oneTimePswd);
         this.restMockMvc = MockMvcBuilders.standaloneSetup(otp)
             .setCustomArgumentResolvers(pageableArgumentResolver)
@@ -113,7 +118,7 @@ public class OneTimePasswordResourceIntTest {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
-        return ow.writeValueAsString(tdo );
+        return ow.writeValueAsString(tdo);
     }
 
 }

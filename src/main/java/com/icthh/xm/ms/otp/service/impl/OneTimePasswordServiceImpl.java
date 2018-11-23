@@ -47,14 +47,15 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
         //1. get config (balance)
 
-        //2. generate by config
+        //2. generate by config (Generex)
 
         //3. save
+        OneTimePassword oneTimePassword = oneTimePasswordMapper.toEntity(oneTimePasswordDTO);
+        oneTimePassword = oneTimePasswordRepository.save(oneTimePassword);
 
         //4. send through communication ms (bean loadBalancedRestTemplate)
 
-        OneTimePassword oneTimePassword = oneTimePasswordMapper.toEntity(oneTimePasswordDTO);
-        oneTimePassword = oneTimePasswordRepository.save(oneTimePassword);
+
         return oneTimePasswordMapper.toDto(oneTimePassword);
     }
 
