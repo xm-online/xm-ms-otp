@@ -9,10 +9,7 @@ import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.net.URISyntaxException;
@@ -49,7 +46,7 @@ public class OneTimePasswordResource {
 
         log.debug("REST request to save OneTimePassword : {}", oneTimePasswordDTO);
 
-        //OneTimePasswordDTO result = oneTimePasswordService.save(oneTimePasswordDTO);
+        OneTimePasswordDTO result = oneTimePasswordService.save(oneTimePasswordDTO);
         return ResponseEntity.ok(oneTimePasswordDTO);
     }
 

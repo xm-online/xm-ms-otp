@@ -5,12 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.icthh.xm.ms.otp.OtpApp;
+import com.icthh.xm.ms.otp.config.ApplicationProperties;
 import com.icthh.xm.ms.otp.config.SecurityBeanOverrideConfiguration;
 import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
+import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
+import com.icthh.xm.ms.otp.service.OtpSpecService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.impl.OneTimePasswordServiceImpl;
+import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.icthh.xm.ms.otp.web.rest.errors.ExceptionTranslator;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +36,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.Validator;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -77,14 +82,23 @@ public class OneTimePasswordResourceIntTest {
     @Autowired
     private Validator validator;
 
+    @Autowired
+    private OneTimePasswordMapper oneTimePasswordMapper;
+
+    @Autowired
+    private ApplicationProperties applicationProperties;
+
+    @Autowired
+    OtpSpecService otpSpecService;
+
 
     @SneakyThrows
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        OneTimePasswordServiceImpl oneTimePswd = new OneTimePasswordServiceImpl(oneTimePasswordRepository,
-            null);
-        OneTimePasswordResource otp = new OneTimePasswordResource(oneTimePswd);
+        OneTimePasswordServiceImpl oneTimePasswordService = getOneTimePasswordService();
+        OneTimePasswordResource otp = new OneTimePasswordResource(
+            oneTimePasswordService);
         this.restMockMvc = MockMvcBuilders.standaloneSetup(otp)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -92,14 +106,26 @@ public class OneTimePasswordResourceIntTest {
             .setMessageConverters(jacksonMessageConverter).build();
     }
 
+    private OneTimePasswordServiceImpl getOneTimePasswordService() {
+        OtpSpecService otpSpecService = new OtpSpecService(applicationProperties);
+        OtpSpec otpSpec = new OtpSpec();
+        otpSpec.setTypes(new ArrayList<>());
+        otpSpec.getTypes().add(new OtpSpec.OtpTypeSpec("TYPE1", "[ab]{4,6}c", ReceiverTypeKey.PHONE_NUMBER, null, 6,3, 600));
+        otpSpecService.setOtpSpec(otpSpec);
+        return new OneTimePasswordServiceImpl(
+            oneTimePasswordRepository,
+            oneTimePasswordMapper,
+            otpSpecService
+        );
+    }
+
     @Test
-    public void getUserSubscriptionInformation() throws Exception {
+    public void testOtp() throws Exception {
 
         OneTimePasswordDTO tdo = new OneTimePasswordDTO();
-        tdo.setId(23L);
-        tdo.setReceiver("receiver");
-        tdo.setReceiverTypeKey(ReceiverTypeKey.USER_ID);
-        tdo.setTypeKey("typeKey");
+        tdo.setReceiver("+380631234567");
+        tdo.setReceiverTypeKey(ReceiverTypeKey.PHONE_NUMBER);
+        tdo.setTypeKey("TYPE1");
         String requestJson = toJson(tdo);
 
         MockHttpServletRequestBuilder postContent = post("/api/one-time-password")

@@ -150,6 +150,7 @@ application:
     kafka-system-queue: system_queue
     tenant-ignored-path-list: /swagger-resources/configuration/ui, /management/health, /oauth/token_key, /h2-console
     timelines-enabled: true
+    spec-path: /config/tenants/XM/otp/otpspec.yml
     lep:
         tenant-script-storage: XM_MS_CONFIG
         lep-resource-path-pattern: /config/tenants/{tenantName}/entity/lep/resources/**/*
