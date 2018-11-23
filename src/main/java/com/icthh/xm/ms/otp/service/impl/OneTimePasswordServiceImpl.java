@@ -45,13 +45,13 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     public OneTimePasswordDTO save(OneTimePasswordDTO oneTimePasswordDTO) {
         log.debug("Request to save OneTimePassword : {}", oneTimePasswordDTO);
 
-        //1. get config
+        //1. get config (balance)
 
         //2. generate by config
 
         //3. save
 
-        //4. send through communication ms
+        //4. send through communication ms (bean loadBalancedRestTemplate)
 
         OneTimePassword oneTimePassword = oneTimePasswordMapper.toEntity(oneTimePasswordDTO);
         oneTimePassword = oneTimePasswordRepository.save(oneTimePassword);
