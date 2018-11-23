@@ -16,7 +16,9 @@
 
 spring:
     application:
-        name: otp
+        name: hlr
+    mail:
+        host: localhost
     messages:
         basename: i18n/messages
     mvc:
@@ -24,14 +26,18 @@ spring:
             enabled: false
     thymeleaf:
         mode: HTML
-    kafka:
-        bootstrap-servers: localhost:9093
+    jackson:
+        serialization:
+            indent_output: true
+        default-property-inclusion: non_null
 
-logging:
-    level:
-        ROOT: DEBUG
-        com.icthh.xm: DEBUG
-        io.github.jhipster: DEBUG
+server:
+    port: 10344
+    address: localhost
+
+info:
+    project:
+        version: #project.version#
 
 # ===================================================================
 # JHipster specific properties
@@ -55,11 +61,11 @@ jhipster:
         authentication:
             jwt:
                 # This token must be encoded using Base64 (you can type `echo 'secret-key'|base64` on your command line)
-                base64-secret: Y2U2OWQ3MTY4Mzg4MmM0NWQ4ZTA5MTNkMWRlOGNlNmM0ZWRjNWQ3MGJmZjYwOWQ3YWE3Y2NlYTI0MDhlMGRlN2RlYTc1MjAxODA0YWRkYjViM2RmZDg1MTg0MTkyMTYzN2UyM2I5ZTRkZWViMjhhNDBkNzMwNThmYzU5N2M4OTY=
+                base64-secret: YzgyNDNkYjM2YzM5NDJiNThkNGI2YWI5NGUzMzE5NGYxMjYzMWVhYzZhNWEwNzliODkzZDYzMmRmNWY4NjYxOWZlZTAyOTAzMTRlMjg5ODg3NjFhNGEyMzNmNDJkMGUzOWE5MWViYTBmNjM2YWRlNDE1NjQ3NjU1YTU0MWQ0Yjg=
                 # Token is valid 24 hours
                 token-validity-in-seconds: 86400
         client-authorization:
-            access-token-uri: http://config/oauth/token
+            access-token-uri: http://config/api/token_key
             token-service-id: config
             client-id: internal
             client-secret: internal
@@ -68,8 +74,6 @@ jhipster:
         logs: # Reports Dropwizard metrics in the logs
             enabled: true
             report-frequency: 60 # in seconds
-xm-config:
-    enabled: false
 
 # ===================================================================
 # Application specific properties
@@ -78,7 +82,9 @@ xm-config:
 #
 # More documentation is available at:
 # https://www.jhipster.tech/common-application-properties/
-# ==================================================================
+# ===================================================================
+xm-config:
+    enabled: false
 
 application:
     kafka-system-topic: system_topic
