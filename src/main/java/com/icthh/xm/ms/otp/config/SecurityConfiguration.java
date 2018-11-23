@@ -1,8 +1,9 @@
 package com.icthh.xm.ms.otp.config;
 
-import com.icthh.xm.ms.otp.config.oauth2.OAuth2JwtAccessTokenConverter;
-import com.icthh.xm.ms.otp.config.oauth2.OAuth2Properties;
-import com.icthh.xm.ms.otp.security.oauth2.OAuth2SignatureVerifierClient;
+import com.icthh.xm.commons.security.oauth2.ConfigSignatureVerifierClient;
+import com.icthh.xm.commons.security.oauth2.OAuth2JwtAccessTokenConverter;
+import com.icthh.xm.commons.security.oauth2.OAuth2Properties;
+import com.icthh.xm.commons.security.oauth2.OAuth2SignatureVerifierClient;
 import com.icthh.xm.ms.otp.security.AuthoritiesConstants;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -52,6 +53,12 @@ public class SecurityConfiguration extends ResourceServerConfigurerAdapter {
     @Bean
     public TokenStore tokenStore(JwtAccessTokenConverter jwtAccessTokenConverter) {
         return new JwtTokenStore(jwtAccessTokenConverter);
+    }
+
+
+    @Bean
+    public ConfigSignatureVerifierClient configSignatureVerifierClient(@Qualifier("loadBalancedRestTemplate") RestTemplate restTemplate) {
+        return new ConfigSignatureVerifierClient(oAuth2Properties, restTemplate);
     }
 
     @Bean

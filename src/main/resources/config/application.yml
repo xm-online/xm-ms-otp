@@ -126,7 +126,9 @@ jhipster:
         contact-email:
         license:
         license-url:
-
+base-package: com.icthh.xm.ms.otp
+xm-config:
+    enabled: false
 logging:
     file: build/otp.log
 
