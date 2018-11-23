@@ -1,0 +1,17 @@
+
+entity OneTimePassword {
+	receiver  String required, 
+    receiverTypeKey ReciverTypeKey required, 
+	typeKey String required, 
+    stateKey String required,
+    retries Integer required,
+    startDate Instant required,
+    endDate Instant required,
+    passwordHash String required
+}
+
+enum ReciverTypeKey {
+    USER_ID, EMAIL, IP, NAME, PHONE_NUMBER
+  }
+service OneTimePassword with serviceImpl
+dto * with mapstruct
