@@ -4,13 +4,12 @@ import com.codahale.metrics.annotation.Timed;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDTO;
 import com.icthh.xm.ms.otp.web.rest.errors.BadRequestAlertException;
-import com.icthh.xm.ms.otp.web.rest.util.HeaderUtil;
+
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,7 +54,7 @@ public class OneTimePasswordResource {
     }
 
     /**
-     * PUT  /one-time-password/check : Validate an existing oneTimePassword.
+     * POST  /one-time-password/check : Validate an existing oneTimePassword.
      *
      * @param oneTimePasswordCheckDTO the otp for checking
      * @return the ResponseEntity with status 200 (OK)
@@ -63,7 +62,7 @@ public class OneTimePasswordResource {
      * or with status 500 (Internal Server Error) if the oneTimePasswordCheckDTO couldn't be checked
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-    @PutMapping("/one-time-password/check")
+    @PostMapping("/one-time-password/check")
     @Timed
     public ResponseEntity<OneTimePasswordCheckDTO> updateOneTimePassword(
         @Valid @RequestBody OneTimePasswordCheckDTO oneTimePasswordCheckDTO) throws URISyntaxException {
