@@ -1,0 +1,11 @@
+version: '2'
+services:
+    otp-postgresql:
+        image: postgres:10.4
+        # volumes:
+        #     - ~/volumes/jhipster/otp/postgresql/:/var/lib/postgresql/data/
+        environment:
+            - POSTGRES_USER=otp
+            - POSTGRES_PASSWORD=
+        ports:
+            - 5432:5432

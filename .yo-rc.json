@@ -1,0 +1,35 @@
+{
+  "generator-jhipster": {
+    "promptValues": {
+      "packageName": "com.icthh.xm.ms.otp"
+    },
+    "jhipsterVersion": "5.3.4",
+    "applicationType": "microservice",
+    "baseName": "otp",
+    "packageName": "com.icthh.xm.ms.otp",
+    "packageFolder": "com/icthh/xm/ms/otp",
+    "serverPort": "8087",
+    "authenticationType": "uaa",
+    "uaaBaseName": "uaa",
+    "cacheProvider": "no",
+    "websocket": false,
+    "databaseType": "sql",
+    "devDatabaseType": "h2Memory",
+    "prodDatabaseType": "postgresql",
+    "searchEngine": false,
+    "messageBroker": false,
+    "serviceDiscoveryType": "consul",
+    "buildTool": "gradle",
+    "enableSwaggerCodegen": false,
+    "jwtSecretKey": "Njc0NGYxYTg1Y2MyNTMwYzBkZGM5ZmU4N2YyYWM1MzEyYTNjZDU3MThkZTBlYzZmNmQ0NjExY2YyNDUzYjFhZDM4NjgxMjFhNzQ1Y2JmMDk4ZTBlYWRhNTE0YmY3NjY2ZjEzNzQ3ZWM2NGY3NzIzMDZkM2MzOTczZGY4YTAyZTE=",
+    "enableTranslation": false,
+    "testFrameworks": [
+      "gatling",
+      "cucumber"
+    ],
+    "jhiPrefix": "jhi",
+    "clientPackageManager": "npm",
+    "skipClient": true,
+    "skipUserManagement": true
+  }
+}
