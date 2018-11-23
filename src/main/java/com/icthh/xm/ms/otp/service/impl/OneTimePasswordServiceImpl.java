@@ -55,7 +55,6 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
         //4. send through communication ms (bean loadBalancedRestTemplate)
 
-
         return oneTimePasswordMapper.toDto(oneTimePassword);
     }
 
