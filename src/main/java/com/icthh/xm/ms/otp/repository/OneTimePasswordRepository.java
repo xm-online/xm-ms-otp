@@ -1,7 +1,8 @@
 package com.icthh.xm.ms.otp.repository;
 
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
-import org.springframework.data.jpa.repository.*;
+
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 

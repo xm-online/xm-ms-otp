@@ -5,6 +5,7 @@ import com.icthh.xm.ms.otp.OtpApp;
 import com.icthh.xm.ms.otp.config.SecurityBeanOverrideConfiguration;
 
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
+import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
@@ -37,7 +38,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.icthh.xm.ms.otp.domain.enumeration.ReciverTypeKey;
 /**
  * Test class for the OneTimePasswordResource REST controller.
  *
@@ -50,8 +50,8 @@ public class OneTimePasswordResourceIntTest {
     private static final String DEFAULT_RECEIVER = "AAAAAAAAAA";
     private static final String UPDATED_RECEIVER = "BBBBBBBBBB";
 
-    private static final ReciverTypeKey DEFAULT_RECEIVER_TYPE_KEY = ReciverTypeKey.USER_ID;
-    private static final ReciverTypeKey UPDATED_RECEIVER_TYPE_KEY = ReciverTypeKey.EMAIL;
+    private static final ReceiverTypeKey DEFAULT_RECEIVER_TYPE_KEY = ReceiverTypeKey.USER_ID;
+    private static final ReceiverTypeKey UPDATED_RECEIVER_TYPE_KEY = ReceiverTypeKey.EMAIL;
 
     private static final String DEFAULT_TYPE_KEY = "AAAAAAAAAA";
     private static final String UPDATED_TYPE_KEY = "BBBBBBBBBB";
@@ -76,7 +76,7 @@ public class OneTimePasswordResourceIntTest {
 
     @Autowired
     private OneTimePasswordMapper oneTimePasswordMapper;
-    
+
     @Autowired
     private OneTimePasswordService oneTimePasswordService;
 
@@ -349,7 +349,7 @@ public class OneTimePasswordResourceIntTest {
             .andExpect(jsonPath("$.[*].endDate").value(hasItem(DEFAULT_END_DATE.toString())))
             .andExpect(jsonPath("$.[*].passwordHash").value(hasItem(DEFAULT_PASSWORD_HASH.toString())));
     }
-    
+
     @Test
     @Transactional
     public void getOneTimePassword() throws Exception {

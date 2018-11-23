@@ -1,8 +1,8 @@
 package com.icthh.xm.ms.otp.domain.enumeration;
 
 /**
- * The ReciverTypeKey enumeration.
+ * The ReceiverTypeKey enumeration.
  */
-public enum ReciverTypeKey {
+public enum ReceiverTypeKey {
     USER_ID, EMAIL, IP, NAME, PHONE_NUMBER
 }

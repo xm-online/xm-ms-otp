@@ -11,8 +11,6 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring", uses = {})
 public interface OneTimePasswordMapper extends EntityMapper<OneTimePasswordDTO, OneTimePassword> {
 
-
-
     default OneTimePassword fromId(Long id) {
         if (id == null) {
             return null;

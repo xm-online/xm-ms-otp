@@ -29,7 +29,8 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
     private final OneTimePasswordMapper oneTimePasswordMapper;
 
-    public OneTimePasswordServiceImpl(OneTimePasswordRepository oneTimePasswordRepository, OneTimePasswordMapper oneTimePasswordMapper) {
+    public OneTimePasswordServiceImpl(OneTimePasswordRepository oneTimePasswordRepository,
+                                      OneTimePasswordMapper oneTimePasswordMapper) {
         this.oneTimePasswordRepository = oneTimePasswordRepository;
         this.oneTimePasswordMapper = oneTimePasswordMapper;
     }

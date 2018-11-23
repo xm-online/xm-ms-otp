@@ -1,14 +1,21 @@
 package com.icthh.xm.ms.otp.domain;
 
-
-import javax.persistence.*;
-import javax.validation.constraints.*;
-
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 
-import com.icthh.xm.ms.otp.domain.enumeration.ReciverTypeKey;
+import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 /**
  * A OneTimePassword.
@@ -31,7 +38,7 @@ public class OneTimePassword implements Serializable {
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "receiver_type_key", nullable = false)
-    private ReciverTypeKey receiverTypeKey;
+    private ReceiverTypeKey receiverTypeKey;
 
     @NotNull
     @Column(name = "type_key", nullable = false)
@@ -79,16 +86,16 @@ public class OneTimePassword implements Serializable {
         this.receiver = receiver;
     }
 
-    public ReciverTypeKey getReceiverTypeKey() {
+    public ReceiverTypeKey getReceiverTypeKey() {
         return receiverTypeKey;
     }
 
-    public OneTimePassword receiverTypeKey(ReciverTypeKey receiverTypeKey) {
+    public OneTimePassword receiverTypeKey(ReceiverTypeKey receiverTypeKey) {
         this.receiverTypeKey = receiverTypeKey;
         return this;
     }
 
-    public void setReceiverTypeKey(ReciverTypeKey receiverTypeKey) {
+    public void setReceiverTypeKey(ReceiverTypeKey receiverTypeKey) {
         this.receiverTypeKey = receiverTypeKey;
     }
 

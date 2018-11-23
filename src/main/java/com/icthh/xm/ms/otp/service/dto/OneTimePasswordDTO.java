@@ -1,10 +1,11 @@
 package com.icthh.xm.ms.otp.service.dto;
 
-import java.time.Instant;
-import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Objects;
-import com.icthh.xm.ms.otp.domain.enumeration.ReciverTypeKey;
+
+import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * A DTO for the OneTimePassword entity.
@@ -17,25 +18,10 @@ public class OneTimePasswordDTO implements Serializable {
     private String receiver;
 
     @NotNull
-    private ReciverTypeKey receiverTypeKey;
+    private ReceiverTypeKey receiverTypeKey;
 
     @NotNull
     private String typeKey;
-
-    @NotNull
-    private String stateKey;
-
-    @NotNull
-    private Integer retries;
-
-    @NotNull
-    private Instant startDate;
-
-    @NotNull
-    private Instant endDate;
-
-    @NotNull
-    private String passwordHash;
 
     public Long getId() {
         return id;
@@ -53,11 +39,11 @@ public class OneTimePasswordDTO implements Serializable {
         this.receiver = receiver;
     }
 
-    public ReciverTypeKey getReceiverTypeKey() {
+    public ReceiverTypeKey getReceiverTypeKey() {
         return receiverTypeKey;
     }
 
-    public void setReceiverTypeKey(ReciverTypeKey receiverTypeKey) {
+    public void setReceiverTypeKey(ReceiverTypeKey receiverTypeKey) {
         this.receiverTypeKey = receiverTypeKey;
     }
 
@@ -67,46 +53,6 @@ public class OneTimePasswordDTO implements Serializable {
 
     public void setTypeKey(String typeKey) {
         this.typeKey = typeKey;
-    }
-
-    public String getStateKey() {
-        return stateKey;
-    }
-
-    public void setStateKey(String stateKey) {
-        this.stateKey = stateKey;
-    }
-
-    public Integer getRetries() {
-        return retries;
-    }
-
-    public void setRetries(Integer retries) {
-        this.retries = retries;
-    }
-
-    public Instant getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Instant startDate) {
-        this.startDate = startDate;
-    }
-
-    public Instant getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Instant endDate) {
-        this.endDate = endDate;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
     }
 
     @Override
@@ -137,11 +83,6 @@ public class OneTimePasswordDTO implements Serializable {
             ", receiver='" + getReceiver() + "'" +
             ", receiverTypeKey='" + getReceiverTypeKey() + "'" +
             ", typeKey='" + getTypeKey() + "'" +
-            ", stateKey='" + getStateKey() + "'" +
-            ", retries=" + getRetries() +
-            ", startDate='" + getStartDate() + "'" +
-            ", endDate='" + getEndDate() + "'" +
-            ", passwordHash='" + getPasswordHash() + "'" +
             "}";
     }
 }
