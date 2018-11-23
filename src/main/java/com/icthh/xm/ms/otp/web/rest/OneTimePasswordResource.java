@@ -49,8 +49,8 @@ public class OneTimePasswordResource {
 
         log.debug("REST request to save OneTimePassword : {}", oneTimePasswordDTO);
 
-        OneTimePasswordDTO result = oneTimePasswordService.save(oneTimePasswordDTO);
-        return ResponseEntity.ok(result);
+        //OneTimePasswordDTO result = oneTimePasswordService.save(oneTimePasswordDTO);
+        return ResponseEntity.ok(oneTimePasswordDTO);
     }
 
     /**
@@ -64,7 +64,7 @@ public class OneTimePasswordResource {
      */
     @PostMapping("/one-time-password/check")
     @Timed
-    public ResponseEntity<OneTimePasswordCheckDTO> updateOneTimePassword(
+    public ResponseEntity<OneTimePasswordCheckDTO> checkOneTimePassword(
         @Valid @RequestBody OneTimePasswordCheckDTO oneTimePasswordCheckDTO) throws URISyntaxException {
         log.debug("REST request to update OneTimePassword : {}", oneTimePasswordCheckDTO);
         if (oneTimePasswordCheckDTO.getId() == null) {
