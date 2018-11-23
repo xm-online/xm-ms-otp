@@ -44,6 +44,15 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     @Override
     public OneTimePasswordDTO save(OneTimePasswordDTO oneTimePasswordDTO) {
         log.debug("Request to save OneTimePassword : {}", oneTimePasswordDTO);
+
+        //1. get config
+
+        //2. generate by config
+
+        //3. save
+
+        //4. send through communication ms
+
         OneTimePassword oneTimePassword = oneTimePasswordMapper.toEntity(oneTimePasswordDTO);
         oneTimePassword = oneTimePasswordRepository.save(oneTimePassword);
         return oneTimePasswordMapper.toDto(oneTimePassword);
