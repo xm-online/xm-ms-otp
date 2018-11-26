@@ -8,6 +8,7 @@ import com.icthh.xm.ms.otp.OtpApp;
 import com.icthh.xm.ms.otp.config.ApplicationProperties;
 import com.icthh.xm.ms.otp.config.SecurityBeanOverrideConfiguration;
 import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
+import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
@@ -19,12 +20,12 @@ import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.icthh.xm.ms.otp.web.rest.errors.ExceptionTranslator;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
@@ -41,11 +42,11 @@ import org.springframework.validation.Validator;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -70,6 +71,11 @@ public class OneTimePasswordResourceIntTest {
         MediaType.APPLICATION_JSON.getSubtype(),
         Charset.forName("utf8")
     );
+    public static final int TTL = 600;
+    public static final Integer MAX_RETRIES = 3;
+    public static final int LENGTH = 6;
+    public static final String RECEIVER = "+380631234567";
+    public static final String TYPE_KEY = "TYPE1";
 
     private MockMvc restMockMvc;
 
@@ -100,7 +106,7 @@ public class OneTimePasswordResourceIntTest {
 
     private class CommunicationServiceMock extends CommunicationService {
         public CommunicationServiceMock() {
-            super(null, null);
+            super(null, null, null);
         }
 
         @Override
@@ -138,7 +144,7 @@ public class OneTimePasswordResourceIntTest {
         otpSpec.setTypes(new ArrayList<>());
         OtpSpec.OtpMessageSpec message = new OtpSpec.OtpMessageSpec();
         message.setEn("Your otp ${otp}");
-        otpSpec.getTypes().add(new OtpSpec.OtpTypeSpec("TYPE1", "[ab]{4,6}c", ReceiverTypeKey.PHONE_NUMBER, message, 6,3, 600));
+        otpSpec.getTypes().add(new OtpSpec.OtpTypeSpec("TYPE1", "[ab]{4,6}c", ReceiverTypeKey.PHONE_NUMBER, message, LENGTH, MAX_RETRIES, TTL));
         otpSpecService.setOtpSpec(otpSpec);
         return new OneTimePasswordServiceImpl(
             oneTimePasswordRepository,
@@ -153,9 +159,9 @@ public class OneTimePasswordResourceIntTest {
     public void testOtp() throws Exception {
 
         OneTimePasswordDTO tdo = new OneTimePasswordDTO();
-        tdo.setReceiver("+380631234567");
+        tdo.setReceiver(RECEIVER);
         tdo.setReceiverTypeKey(ReceiverTypeKey.PHONE_NUMBER);
-        tdo.setTypeKey("TYPE1");
+        tdo.setTypeKey(TYPE_KEY);
         String requestJson = toJson(tdo);
 
         MockHttpServletRequestBuilder postContent = post("/api/one-time-password")
@@ -167,6 +173,16 @@ public class OneTimePasswordResourceIntTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andReturn();
 
+        OneTimePasswordDTO oneTimePasswordDTO = toDto(result.getResponse().getContentAsString(), OneTimePasswordDTO.class);
+
+        OneTimePassword byId = oneTimePasswordRepository.findById(oneTimePasswordDTO.getId()).get();
+        long actualTtl = byId.getEndDate().toEpochMilli() - byId.getStartDate().toEpochMilli();
+        Assert.assertEquals(actualTtl / 1000, TTL);
+        Assert.assertEquals(byId.getReceiver(), RECEIVER);
+        Assert.assertEquals(byId.getTypeKey(), TYPE_KEY);
+        Assert.assertEquals(byId.getStateKey(), "ACTIVE");
+        Assert.assertEquals(byId.getRetries(), MAX_RETRIES);
+        Assert.assertEquals(byId.getReceiverTypeKey(), ReceiverTypeKey.PHONE_NUMBER);
         log.info(result.getResponse().getContentAsString());
     }
 
@@ -175,6 +191,11 @@ public class OneTimePasswordResourceIntTest {
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
         return ow.writeValueAsString(tdo);
+    }
+
+    private <T> T toDto(String response, Class<T> cls) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(response, cls);
     }
 
 }

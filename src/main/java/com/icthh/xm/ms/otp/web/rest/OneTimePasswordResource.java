@@ -47,7 +47,7 @@ public class OneTimePasswordResource {
         log.debug("REST request to generate OneTimePassword : {}", oneTimePasswordDTO);
 
         OneTimePasswordDTO result = oneTimePasswordService.generate(oneTimePasswordDTO);
-        return ResponseEntity.ok(oneTimePasswordDTO);
+        return ResponseEntity.ok(result);
     }
 
     /**

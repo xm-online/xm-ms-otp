@@ -1,6 +1,7 @@
 package com.icthh.xm.ms.otp.security;
+import com.icthh.xm.commons.tenant.TenantContext;
+import com.icthh.xm.commons.tenant.TenantContextHolder;
 import com.icthh.xm.ms.otp.config.ApplicationProperties;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -15,8 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static sun.security.krb5.SCDynamicStoreConfig.getConfig;
-
 @Component
 @Slf4j
 public class CommunicationService {
@@ -25,20 +24,21 @@ public class CommunicationService {
 
     static class AuthValue {
         Long createTokenTime;
-        Integer expires_in;
-        String token_type;
-        String access_token;
+        Integer expiresIn;
+        String tokenType;
+        String accessToken;
     }
 
-
     private final ApplicationProperties applicationProperties;
+    private final TenantContextHolder tenantContext;
 
 
     private final RestTemplate restTemplate;
 
-    public CommunicationService(ApplicationProperties applicationProperties, @Qualifier("loadBalancedRestTemplate") RestTemplate restTemplate) {
+    public CommunicationService(ApplicationProperties applicationProperties, @Qualifier("loadBalancedRestTemplate") RestTemplate restTemplate, TenantContextHolder tenantContext) {
         this.applicationProperties = applicationProperties;
         this.restTemplate = restTemplate;
+        this.tenantContext = tenantContext;
     }
 
     public Map post(String url, Map <String, String> args, Map<String, String> additionalHeaders, MediaType mediaType) {
@@ -54,7 +54,7 @@ public class CommunicationService {
             headers.set(addHeader.getKey(), addHeader.getValue());
         }
 
-        headers.set("x-tenant", "XM"); //TODO
+        headers.set("x-tenant", tenantContext.getContext().getTenantKey().get().getValue());
 
         HttpEntity<MultiValueMap> request = new HttpEntity<MultiValueMap>(map, headers);
         log.info("Post to {} with args {}", url, args);
@@ -65,8 +65,8 @@ public class CommunicationService {
 
         AuthValue authValue = (AuthValue) atomicReference.get();
 
-        if (authValue != null && ((System.currentTimeMillis() / 1000) - authValue.createTokenTime) < (authValue.expires_in - 60)) {
-            return authValue.token_type + " " + authValue.access_token;
+        if (authValue != null && ((System.currentTimeMillis() / 1000) - authValue.createTokenTime) < (authValue.expiresIn - 60)) {
+            return authValue.tokenType + " " + authValue.accessToken;
         }
 
         Map<String, String> body = new HashMap<>();
@@ -80,13 +80,13 @@ public class CommunicationService {
         headers.put("Authorization", uaa.getSystemClientToken());
         Map response = this.post(uaa.getSystemAuthUrl(), body, headers, MediaType.APPLICATION_FORM_URLENCODED);
         AuthValue auth = new AuthValue();
-        auth.access_token = (String) response.get("access_token");
-        auth.token_type  = (String) response.get("token_type");
-        auth.expires_in  = (Integer) response.get("expires_in");
+        auth.accessToken = (String) response.get("access_token");
+        auth.tokenType = (String) response.get("token_type");
+        auth.expiresIn = (Integer) response.get("expires_in");
         auth.createTokenTime = System.currentTimeMillis() / 1000;
         atomicReference.set(auth);
 
-        String token = auth.token_type + " " + auth.access_token;
+        String token = auth.tokenType + " " + auth.accessToken;
         log.info(token);
         return token;
     }
