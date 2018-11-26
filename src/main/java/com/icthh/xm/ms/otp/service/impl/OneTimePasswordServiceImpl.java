@@ -2,6 +2,8 @@ package com.icthh.xm.ms.otp.service.impl;
 
 import com.icthh.xm.ms.otp.client.domain.CommunicationMessage;
 import com.icthh.xm.ms.otp.client.domain.Receiver;
+import com.icthh.xm.ms.otp.client.domain.Sender;
+import com.icthh.xm.ms.otp.config.ApplicationProperties;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
@@ -43,6 +45,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     private final OneTimePasswordRepository oneTimePasswordRepository;
 
     private final OneTimePasswordMapper oneTimePasswordMapper;
+    private final ApplicationProperties applicationProperties;
 
     private final RestTemplate loadBalancedRestTemplate;
     private final CommunicationService communicationService;
@@ -51,12 +54,14 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
                                       OneTimePasswordMapper oneTimePasswordMapper,
                                       OtpSpecService otpSpecService,
                                       @Qualifier("loadBalancedRestTemplate") RestTemplate template,
-                                      CommunicationService communicationService) {
+                                      CommunicationService communicationService,
+                                      ApplicationProperties applicationProperties) {
         this.oneTimePasswordRepository = oneTimePasswordRepository;
         this.oneTimePasswordMapper = oneTimePasswordMapper;
         this.otpSpecService = otpSpecService;
         this.loadBalancedRestTemplate = template;
         this.communicationService = communicationService;
+        this.applicationProperties = applicationProperties;
     }
 
     /**
@@ -83,11 +88,14 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, communicationService.getSystemToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
-        String url = "http://communication/tmf-api/communicationManagement/v2/communicationMessage/send";
+        String url = applicationProperties.getCommunicationUrl()
+            + "/tmf-api/communicationManagement/v2/communicationMessage/send";
         CommunicationMessage body = new CommunicationMessage();
         body.setContent(message);
+        body.setType("SMS");
+        body.setSender(new Sender(applicationProperties.getOtpSenderId()));
         body.setReceiver(new ArrayList<>());
-        body.getReceiver().add(new Receiver(receiver));
+        body.getReceiver().add(new Receiver(receiver, receiver));
         RequestEntity<Object> request = new RequestEntity<>(body, headers, POST, URI.create(url));
         loadBalancedRestTemplate.exchange(request, Object.class);
     }

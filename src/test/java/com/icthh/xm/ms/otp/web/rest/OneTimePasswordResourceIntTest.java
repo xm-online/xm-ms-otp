@@ -160,7 +160,8 @@ public class OneTimePasswordResourceIntTest {
             oneTimePasswordMapper,
             otpSpecService,
             new RestTemplateMock(),
-            new CommunicationServiceMock()
+            new CommunicationServiceMock(),
+            applicationProperties
         );
     }
 

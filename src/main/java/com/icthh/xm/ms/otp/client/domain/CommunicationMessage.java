@@ -9,4 +9,6 @@ public class CommunicationMessage {
 
     private List<Receiver> receiver;
     private String content;
+    private String type;
+    private Sender sender;
 }
