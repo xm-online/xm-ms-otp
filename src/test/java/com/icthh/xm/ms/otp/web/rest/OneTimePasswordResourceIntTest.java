@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -36,6 +38,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.Validator;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.Charset;
@@ -94,12 +97,25 @@ public class OneTimePasswordResourceIntTest {
     @Autowired
     OtpSpecService otpSpecService;
 
-    @Autowired
-    @Qualifier("loadBalancedRestTemplate")
-    RestTemplate loadBalancedRestTemplate;
 
-    @Autowired
-    CommunicationService communicationService;
+    private class CommunicationServiceMock extends CommunicationService {
+        public CommunicationServiceMock() {
+            super(null, null);
+        }
+
+        @Override
+        public String getSystemToken() {
+            return null;
+        }
+    }
+
+
+    private class RestTemplateMock extends RestTemplate {
+        @Override
+        public <T> ResponseEntity<T> exchange(RequestEntity<?> requestEntity, Class<T> responseType) throws RestClientException {
+            return null;
+        }
+    }
 
 
     @SneakyThrows
@@ -120,14 +136,16 @@ public class OneTimePasswordResourceIntTest {
         OtpSpecService otpSpecService = new OtpSpecService(applicationProperties);
         OtpSpec otpSpec = new OtpSpec();
         otpSpec.setTypes(new ArrayList<>());
-        otpSpec.getTypes().add(new OtpSpec.OtpTypeSpec("TYPE1", "[ab]{4,6}c", ReceiverTypeKey.PHONE_NUMBER, null, 6,3, 600));
+        OtpSpec.OtpMessageSpec message = new OtpSpec.OtpMessageSpec();
+        message.setEn("Your otp ${otp}");
+        otpSpec.getTypes().add(new OtpSpec.OtpTypeSpec("TYPE1", "[ab]{4,6}c", ReceiverTypeKey.PHONE_NUMBER, message, 6,3, 600));
         otpSpecService.setOtpSpec(otpSpec);
         return new OneTimePasswordServiceImpl(
             oneTimePasswordRepository,
             oneTimePasswordMapper,
             otpSpecService,
-            loadBalancedRestTemplate,
-            communicationService
+            new RestTemplateMock(),
+            new CommunicationServiceMock()
         );
     }
 

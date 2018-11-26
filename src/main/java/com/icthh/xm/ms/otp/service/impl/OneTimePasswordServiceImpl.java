@@ -68,6 +68,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
      * @return the persisted entity
      */
     @Override
+    @Transactional
     public OneTimePasswordDTO generate(OneTimePasswordDTO oneTimePasswordDTO) {
         log.debug("Request to generate OneTimePassword : {}", oneTimePasswordDTO);
 
@@ -79,10 +80,15 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         OneTimePassword oneTimePassword = new OneTimePassword();
         long now = new Date().getTime();
         Instant startDate = Instant.ofEpochMilli(now);
-        Instant endDate = Instant.ofEpochMilli(now + oneType.getTtl());
+        Instant endDate = Instant.ofEpochMilli(now + oneType.getTtl()*1000);
         oneTimePassword.startDate(startDate);
         oneTimePassword.setEndDate(endDate);
         oneTimePassword.setPasswordHash(randomStr);
+        oneTimePassword.setReceiverTypeKey(oneType.getReceiverTypeKey());
+        oneTimePassword.setRetries(oneType.getMaxRetries());
+        oneTimePassword.setTypeKey(oneTimePasswordDTO.getTypeKey());
+        oneTimePassword.setReceiver(oneTimePasswordDTO.getReceiver());
+        oneTimePassword.setStateKey("ACTIVE");
 
         String sha256hex = Arrays.toString(DigestUtils.sha256(randomStr));
 
@@ -91,7 +97,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         String url = "http://communication/tmf-api/communicationManagement/v2/communicationMessage/send";
-
+        oneTimePassword.setPasswordHash(sha256hex);
         CommunicationMessage body = new CommunicationMessage();
         String mesage = oneType.getMessage().getEn().replaceAll("\\$\\{otp}", randomStr);
         body.setContent(mesage);
@@ -101,7 +107,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         loadBalancedRestTemplate.exchange(objectRequestEntity, Object.class);
 
         //4. send through communication ms (bean loadBalancedRestTemplate)
-
+        oneTimePasswordRepository.saveAndFlush(oneTimePassword);
         return oneTimePasswordMapper.toDto(oneTimePassword);
     }
 
