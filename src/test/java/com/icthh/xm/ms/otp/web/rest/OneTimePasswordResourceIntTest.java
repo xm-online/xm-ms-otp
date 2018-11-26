@@ -11,6 +11,7 @@ import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
+import com.icthh.xm.ms.otp.security.CommunicationService;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.impl.OneTimePasswordServiceImpl;
@@ -23,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
@@ -34,6 +36,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.Validator;
+import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -91,6 +94,13 @@ public class OneTimePasswordResourceIntTest {
     @Autowired
     OtpSpecService otpSpecService;
 
+    @Autowired
+    @Qualifier("loadBalancedRestTemplate")
+    RestTemplate loadBalancedRestTemplate;
+
+    @Autowired
+    CommunicationService communicationService;
+
 
     @SneakyThrows
     @Before
@@ -115,7 +125,9 @@ public class OneTimePasswordResourceIntTest {
         return new OneTimePasswordServiceImpl(
             oneTimePasswordRepository,
             oneTimePasswordMapper,
-            otpSpecService
+            otpSpecService,
+            loadBalancedRestTemplate,
+            communicationService
         );
     }
 

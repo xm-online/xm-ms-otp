@@ -44,9 +44,9 @@ public class OneTimePasswordResource {
     public ResponseEntity<OneTimePasswordDTO> generateOneTimePassword(
         @Valid @RequestBody OneTimePasswordDTO oneTimePasswordDTO) throws URISyntaxException {
 
-        log.debug("REST request to save OneTimePassword : {}", oneTimePasswordDTO);
+        log.debug("REST request to generate OneTimePassword : {}", oneTimePasswordDTO);
 
-        OneTimePasswordDTO result = oneTimePasswordService.save(oneTimePasswordDTO);
+        OneTimePasswordDTO result = oneTimePasswordService.generate(oneTimePasswordDTO);
         return ResponseEntity.ok(oneTimePasswordDTO);
     }
 

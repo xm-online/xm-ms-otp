@@ -25,6 +25,7 @@ public class ApplicationProperties {
 
 
     private final Lep lep = new Lep();
+    private final Uaa uaa = new Uaa();
 
     private List<String> tenantIgnoredPathList = Collections.emptyList();
 
@@ -34,4 +35,14 @@ public class ApplicationProperties {
         private TenantScriptStorage tenantScriptStorage;
         private String lepResourcePathPattern;
     }
+
+    @Getter
+    @Setter
+    public static class Uaa {
+        private String systemAuthUrl;
+        private String systemUsername;
+        private String systemPassword;
+        private String systemClientToken;
+    }
+
 }
