@@ -1,5 +1,6 @@
 package com.icthh.xm.ms.otp.service;
 
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDTO;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 
 import java.util.List;
@@ -17,6 +18,15 @@ public interface OneTimePasswordService {
      * @return the persisted entity
      */
     OneTimePasswordDTO save(OneTimePasswordDTO oneTimePasswordDTO);
+
+
+    /**
+     * Validate one time password
+     *
+     * @param oneTimePasswordDTO the entity to save
+     * @return the persisted entity
+     */
+    OneTimePasswordCheckDTO check(OneTimePasswordCheckDTO oneTimePasswordDTO);
 
     /**
      * Get all the oneTimePasswords.

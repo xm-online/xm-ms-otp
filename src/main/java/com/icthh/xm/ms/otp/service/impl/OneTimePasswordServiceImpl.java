@@ -6,6 +6,7 @@ import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDTO;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.mifmif.common.regex.Generex;
@@ -84,6 +85,23 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         //4. send through communication ms (bean loadBalancedRestTemplate)
 
         return oneTimePasswordMapper.toDto(oneTimePassword);
+    }
+
+    @Override
+    public OneTimePasswordCheckDTO check(OneTimePasswordCheckDTO oneTimePasswordDTO) {
+        //1. get otp from db
+
+        //2. check state (must be ACTIVE)
+
+        //3. check expiration date
+
+        //4. check retries < maxRetries
+
+        //5. check otp (hash 256)
+        //if success -> change state to VERIFIED
+        //if not - retries+
+
+        return null;
     }
 
     /**
