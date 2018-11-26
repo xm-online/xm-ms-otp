@@ -50,12 +50,12 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     public OneTimePasswordServiceImpl(OneTimePasswordRepository oneTimePasswordRepository,
                                       OneTimePasswordMapper oneTimePasswordMapper,
                                       OtpSpecService otpSpecService,
-                                      @Qualifier("loadBalancedRestTemplate") RestTemplate loadBalancedRestTemplate,
+                                      @Qualifier("loadBalancedRestTemplate") RestTemplate template,
                                       CommunicationService communicationService) {
         this.oneTimePasswordRepository = oneTimePasswordRepository;
         this.oneTimePasswordMapper = oneTimePasswordMapper;
         this.otpSpecService = otpSpecService;
-        this.loadBalancedRestTemplate = loadBalancedRestTemplate;
+        this.loadBalancedRestTemplate = template;
         this.communicationService = communicationService;
     }
 
@@ -69,19 +69,13 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     @Transactional
     public OneTimePasswordDTO generate(OneTimePasswordDTO oneTimePasswordDTO) {
         log.debug("Request to generate OneTimePassword : {}", oneTimePasswordDTO);
-
         OtpSpec.OtpTypeSpec oneType = getOneTypeSpec(oneTimePasswordDTO.getTypeKey());
-
         Generex generex = new Generex(oneType.getPattern());
         String randomPasswrd = generex.random();
         OneTimePassword otp = getOneTimePassword(oneTimePasswordDTO, oneType, randomPasswrd);
-
         String message = oneType.getMessage().getEn().replaceAll("\\$\\{otp}", randomPasswrd);
-
-        sendOneTimePassword(message, otp.getReceiver());
-
-        //4. send through communication ms (bean loadBalancedRestTemplate)
         oneTimePasswordRepository.saveAndFlush(otp);
+        sendOneTimePassword(message, otp.getReceiver());
         return oneTimePasswordMapper.toDto(otp);
     }
 
@@ -94,8 +88,8 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         body.setContent(message);
         body.setReceiver(new ArrayList<>());
         body.getReceiver().add(new Receiver(receiver));
-        RequestEntity<Object> objectRequestEntity = new RequestEntity<>(body, headers, POST, URI.create(url));
-        loadBalancedRestTemplate.exchange(objectRequestEntity, Object.class);
+        RequestEntity<Object> request = new RequestEntity<>(body, headers, POST, URI.create(url));
+        loadBalancedRestTemplate.exchange(request, Object.class);
     }
 
     private OneTimePassword getOneTimePassword(

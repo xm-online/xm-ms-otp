@@ -131,8 +131,7 @@ public class OneTimePasswordResourceIntTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         OneTimePasswordServiceImpl oneTimePasswordService = getOneTimePasswordService();
-        OneTimePasswordResource otp = new OneTimePasswordResource(
-            oneTimePasswordService);
+        OneTimePasswordResource otp = new OneTimePasswordResource(oneTimePasswordService);
         this.restMockMvc = MockMvcBuilders.standaloneSetup(otp)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
