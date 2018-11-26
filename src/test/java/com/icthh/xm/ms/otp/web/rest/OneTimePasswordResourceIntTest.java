@@ -118,7 +118,9 @@ public class OneTimePasswordResourceIntTest {
 
     private class RestTemplateMock extends RestTemplate {
         @Override
-        public <T> ResponseEntity<T> exchange(RequestEntity<?> requestEntity, Class<T> responseType) throws RestClientException {
+        public <T> ResponseEntity<T> exchange(
+            RequestEntity<?> requestEntity,
+            Class<T> responseType) throws RestClientException {
             return null;
         }
     }
@@ -144,7 +146,15 @@ public class OneTimePasswordResourceIntTest {
         otpSpec.setTypes(new ArrayList<>());
         OtpSpec.OtpMessageSpec message = new OtpSpec.OtpMessageSpec();
         message.setEn("Your otp ${otp}");
-        otpSpec.getTypes().add(new OtpSpec.OtpTypeSpec("TYPE1", "[ab]{4,6}c", ReceiverTypeKey.PHONE_NUMBER, message, LENGTH, MAX_RETRIES, TTL));
+        OtpSpec.OtpTypeSpec type = new OtpSpec.OtpTypeSpec(
+            TYPE_KEY,
+            "[ab]{4,6}c",
+            ReceiverTypeKey.PHONE_NUMBER,
+            message,
+            LENGTH,
+            MAX_RETRIES, TTL
+        );
+        otpSpec.getTypes().add(type);
         otpSpecService.setOtpSpec(otpSpec);
         return new OneTimePasswordServiceImpl(
             oneTimePasswordRepository,
@@ -173,8 +183,9 @@ public class OneTimePasswordResourceIntTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andReturn();
 
-        OneTimePasswordDTO oneTimePasswordDTO = toDto(result.getResponse().getContentAsString(), OneTimePasswordDTO.class);
-
+        String respStr = result.getResponse().getContentAsString();
+        log.info(respStr);
+        OneTimePasswordDTO oneTimePasswordDTO = toDto(respStr, OneTimePasswordDTO.class);
         OneTimePassword byId = oneTimePasswordRepository.findById(oneTimePasswordDTO.getId()).get();
         long actualTtl = byId.getEndDate().toEpochMilli() - byId.getStartDate().toEpochMilli();
         Assert.assertEquals(actualTtl / 1000, TTL);
@@ -183,7 +194,6 @@ public class OneTimePasswordResourceIntTest {
         Assert.assertEquals(byId.getStateKey(), "ACTIVE");
         Assert.assertEquals(byId.getRetries(), MAX_RETRIES);
         Assert.assertEquals(byId.getReceiverTypeKey(), ReceiverTypeKey.PHONE_NUMBER);
-        log.info(result.getResponse().getContentAsString());
     }
 
     private String toJson(OneTimePasswordDTO tdo) throws JsonProcessingException {

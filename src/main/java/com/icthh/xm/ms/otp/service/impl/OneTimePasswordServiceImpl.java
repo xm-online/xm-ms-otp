@@ -1,6 +1,5 @@
 package com.icthh.xm.ms.otp.service.impl;
 
-import com.google.common.hash.Hashing;
 import com.icthh.xm.ms.otp.client.domain.CommunicationMessage;
 import com.icthh.xm.ms.otp.client.domain.Receiver;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
@@ -24,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -75,40 +73,51 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         OtpSpec.OtpTypeSpec oneType = getOneTypeSpec(oneTimePasswordDTO.getTypeKey());
 
         Generex generex = new Generex(oneType.getPattern());
-        String randomStr = generex.random();
-        //3. generate
+        String randomPasswrd = generex.random();
+        OneTimePassword otp = getOneTimePassword(oneTimePasswordDTO, oneType, randomPasswrd);
+
+        String message = oneType.getMessage().getEn().replaceAll("\\$\\{otp}", randomPasswrd);
+
+        sendOneTimePassword(message, otp.getReceiver());
+
+        //4. send through communication ms (bean loadBalancedRestTemplate)
+        oneTimePasswordRepository.saveAndFlush(otp);
+        return oneTimePasswordMapper.toDto(otp);
+    }
+
+    private void sendOneTimePassword(String message, String receiver) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, communicationService.getSystemToken());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String url = "http://communication/tmf-api/communicationManagement/v2/communicationMessage/send";
+        CommunicationMessage body = new CommunicationMessage();
+        body.setContent(message);
+        body.setReceiver(new ArrayList<>());
+        body.getReceiver().add(new Receiver(receiver));
+        RequestEntity<Object> objectRequestEntity = new RequestEntity<>(body, headers, POST, URI.create(url));
+        loadBalancedRestTemplate.exchange(objectRequestEntity, Object.class);
+    }
+
+    private OneTimePassword getOneTimePassword(
+        OneTimePasswordDTO oneTimePasswordDTO,
+        OtpSpec.OtpTypeSpec oneType,
+        String randomPasswrd
+    ) {
+        String sha256hex = Arrays.toString(DigestUtils.sha256(randomPasswrd));
         OneTimePassword oneTimePassword = new OneTimePassword();
         long now = new Date().getTime();
         Instant startDate = Instant.ofEpochMilli(now);
-        Instant endDate = Instant.ofEpochMilli(now + oneType.getTtl()*1000);
+        Instant endDate = Instant.ofEpochMilli(now + oneType.getTtl() * 1000);
         oneTimePassword.startDate(startDate);
         oneTimePassword.setEndDate(endDate);
-        oneTimePassword.setPasswordHash(randomStr);
+        oneTimePassword.setPasswordHash(randomPasswrd);
         oneTimePassword.setReceiverTypeKey(oneType.getReceiverTypeKey());
         oneTimePassword.setRetries(oneType.getMaxRetries());
         oneTimePassword.setTypeKey(oneTimePasswordDTO.getTypeKey());
         oneTimePassword.setReceiver(oneTimePasswordDTO.getReceiver());
-        oneTimePassword.setStateKey("ACTIVE");
-
-        String sha256hex = Arrays.toString(DigestUtils.sha256(randomStr));
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.AUTHORIZATION, communicationService.getSystemToken());
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        String url = "http://communication/tmf-api/communicationManagement/v2/communicationMessage/send";
         oneTimePassword.setPasswordHash(sha256hex);
-        CommunicationMessage body = new CommunicationMessage();
-        String mesage = oneType.getMessage().getEn().replaceAll("\\$\\{otp}", randomStr);
-        body.setContent(mesage);
-        body.setReceiver(new ArrayList<>());
-        body.getReceiver().add(new Receiver(oneTimePassword.getReceiver()));
-        RequestEntity<Object> objectRequestEntity = new RequestEntity<>(body, headers, POST, URI.create(url));
-        loadBalancedRestTemplate.exchange(objectRequestEntity, Object.class);
-
-        //4. send through communication ms (bean loadBalancedRestTemplate)
-        oneTimePasswordRepository.saveAndFlush(oneTimePassword);
-        return oneTimePasswordMapper.toDto(oneTimePassword);
+        oneTimePassword.setStateKey("ACTIVE");
+        return oneTimePassword;
     }
 
     private OtpSpec.OtpTypeSpec getOneTypeSpec(String typeKey) {
