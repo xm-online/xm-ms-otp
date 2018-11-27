@@ -1,5 +1,6 @@
 package com.icthh.xm.ms.otp.service.impl;
 
+import com.google.common.hash.Hashing;
 import com.icthh.xm.ms.otp.client.domain.CommunicationMessage;
 import com.icthh.xm.ms.otp.client.domain.Receiver;
 import com.icthh.xm.ms.otp.client.domain.Sender;
@@ -13,7 +14,6 @@ import com.icthh.xm.ms.otp.service.OtpSpecService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.mifmif.common.regex.Generex;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -105,7 +106,9 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         OtpSpec.OtpTypeSpec oneType,
         String randomPasswrd
     ) {
-        String sha256hex = Arrays.toString(DigestUtils.sha256(randomPasswrd));
+        String sha256hex = Hashing.sha256()
+            .hashString(randomPasswrd, StandardCharsets.UTF_8)
+            .toString();
         OneTimePassword oneTimePassword = new OneTimePassword();
         long now = new Date().getTime();
         Instant startDate = Instant.ofEpochMilli(now);
