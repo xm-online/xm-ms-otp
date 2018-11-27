@@ -13,6 +13,7 @@ import com.icthh.xm.ms.otp.service.OtpSpecService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.mifmif.common.regex.Generex;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,10 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -40,10 +39,9 @@ import static org.springframework.http.HttpMethod.POST;
  * Service Implementation for managing OneTimePassword.
  */
 @Service
+@Slf4j
 @Transactional
 public class OneTimePasswordServiceImpl implements OneTimePasswordService {
-
-    private final Logger log = LoggerFactory.getLogger(OneTimePasswordServiceImpl.class);
 
     private final OtpSpecService otpSpecService;
 
