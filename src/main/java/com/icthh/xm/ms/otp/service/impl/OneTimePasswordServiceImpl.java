@@ -1,6 +1,5 @@
 package com.icthh.xm.ms.otp.service.impl;
 
-import com.google.common.hash.Hashing;
 import com.icthh.xm.ms.otp.client.domain.CommunicationMessage;
 import com.icthh.xm.ms.otp.client.domain.Receiver;
 import com.icthh.xm.ms.otp.client.domain.Sender;
@@ -14,6 +13,7 @@ import com.icthh.xm.ms.otp.service.OtpSpecService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.mifmif.common.regex.Generex;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -91,11 +91,11 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         String message = oneType.getMessage().getEn().replaceAll("\\$\\{otp}", randomPasswrd);
         oneTimePasswordRepository.saveAndFlush(otp);
 
-        sendOneTimePassword(message, otp.getReceiver());
+        sendOneTimePassword(message, otp.getReceiver(), oneType.getOtpSenderId());
         return oneTimePasswordMapper.toDto(otp);
     }
 
-    private void sendOneTimePassword(String message, String receiver) {
+    private void sendOneTimePassword(String message, String receiver, String senderId) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, communicationService.getSystemToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -104,7 +104,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         CommunicationMessage body = new CommunicationMessage();
         body.setContent(message);
         body.setType("SMS");
-        body.setSender(new Sender(applicationProperties.getOtpSenderId()));
+        body.setSender(new Sender(senderId));
         body.setReceiver(new ArrayList<>());
         body.getReceiver().add(new Receiver(receiver, receiver));
         RequestEntity<Object> request = new RequestEntity<>(body, headers, POST, URI.create(url));
@@ -116,13 +116,10 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         OtpSpec.OtpTypeSpec oneType,
         String randomPasswrd
     ) {
-        String sha256hex = Hashing.sha256()
-            .hashString(randomPasswrd, StandardCharsets.UTF_8)
-            .toString();
+        String sha256hex = DigestUtils.sha256Hex(randomPasswrd);
         OneTimePassword oneTimePassword = new OneTimePassword();
-        long now = new Date().getTime();
-        Instant startDate = Instant.ofEpochMilli(now);
-        Instant endDate = Instant.ofEpochMilli(now + oneType.getTtl() * 1000);
+        Instant startDate = Instant.now();
+        Instant endDate = startDate.plusSeconds(oneType.getTtl());
         oneTimePassword.startDate(startDate);
         oneTimePassword.setEndDate(endDate);
         oneTimePassword.setPasswordHash(randomPasswrd);

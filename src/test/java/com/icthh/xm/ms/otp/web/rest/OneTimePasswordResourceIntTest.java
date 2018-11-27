@@ -76,6 +76,7 @@ public class OneTimePasswordResourceIntTest {
     public static final int LENGTH = 6;
     public static final String RECEIVER = "+380631234567";
     public static final String TYPE_KEY = "TYPE1";
+    public static final String OTP_SENDER_ID = "Voodaphone";
 
     private MockMvc restMockMvc;
 
@@ -151,7 +152,9 @@ public class OneTimePasswordResourceIntTest {
             ReceiverTypeKey.PHONE_NUMBER,
             message,
             LENGTH,
-            MAX_RETRIES, TTL
+            MAX_RETRIES,
+            TTL,
+            OTP_SENDER_ID
         );
         otpSpec.getTypes().add(type);
         otpSpecService.setOtpSpec(otpSpec);

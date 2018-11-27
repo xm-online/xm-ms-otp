@@ -279,7 +279,6 @@ dependencies {
     compile "com.icthh.xm.commons:xm-commons-ms-web:${xm_commons_version}"
     compile "com.icthh.xm.commons:xm-commons-lep:${xm_commons_version}"
     compile "com.icthh.xm.commons:xm-commons-timeline:${xm_commons_version}"
-    compile "com.google.guava:guava:${guava_version}"
 
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstruct_version}"
     annotationProcessor "org.hibernate:hibernate-jpamodelgen"

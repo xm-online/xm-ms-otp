@@ -2,6 +2,8 @@ package com.icthh.xm.ms.otp.security;
 import com.icthh.xm.commons.tenant.TenantContext;
 import com.icthh.xm.commons.tenant.TenantContextHolder;
 import com.icthh.xm.ms.otp.config.ApplicationProperties;
+import com.icthh.xm.ms.otp.domain.UaaConfig;
+import com.icthh.xm.ms.otp.service.OtpSpecService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -21,18 +23,18 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CommunicationService {
 
 
-    private final ApplicationProperties applicationProperties;
     private final TenantContextHolder tenantContext;
+    private final OtpSpecService otpSpecService;
 
 
     private final RestTemplate restTemplate;
 
-    public CommunicationService(ApplicationProperties applicationProperties,
-                                @Qualifier("loadBalancedRestTemplate") RestTemplate restTemplate,
-                                TenantContextHolder tenantContext) {
-        this.applicationProperties = applicationProperties;
+    public CommunicationService(@Qualifier("loadBalancedRestTemplate") RestTemplate restTemplate,
+                                TenantContextHolder tenantContext,
+                                OtpSpecService otpSpecService) {
         this.restTemplate = restTemplate;
         this.tenantContext = tenantContext;
+        this.otpSpecService = otpSpecService;
     }
 
     public Map post(String url,
@@ -62,7 +64,7 @@ public class CommunicationService {
 
         Map<String, String> body = new HashMap<>();
         body.put("grant_type", "password");
-        ApplicationProperties.Uaa uaa = applicationProperties.getUaa();
+        UaaConfig uaa = otpSpecService.getUaaConfig();
         body.put("username", uaa.getSystemUsername());
         body.put("password", uaa.getSystemPassword());
 

@@ -23,10 +23,9 @@ public class ApplicationProperties {
     private boolean timelinesEnabled;
     private String specPath;
     private String communicationUrl;
-    private String otpSenderId;
+    private String uaaPath;
 
     private final Lep lep = new Lep();
-    private final Uaa uaa = new Uaa();
 
     private List<String> tenantIgnoredPathList = Collections.emptyList();
 
@@ -35,15 +34,6 @@ public class ApplicationProperties {
     public static class Lep {
         private TenantScriptStorage tenantScriptStorage;
         private String lepResourcePathPattern;
-    }
-
-    @Getter
-    @Setter
-    public static class Uaa {
-        private String systemAuthUrl;
-        private String systemUsername;
-        private String systemPassword;
-        private String systemClientToken;
     }
 
 }

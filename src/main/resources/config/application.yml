@@ -147,17 +147,12 @@ xm-config:
 
 application:
     communication-url: http://communication
-    otp-sender-id: Vodafone
     kafka-system-topic: system_topic
     kafka-system-queue: system_queue
     tenant-ignored-path-list: /swagger-resources/configuration/ui, /management/health, /oauth/token_key, /h2-console
     timelines-enabled: true
     spec-path: /config/tenants/XM/otp/otpspec.yml
-    uaa:
-        systemAuthUrl: "http://uaa/oauth/token"
-        systemUsername: "xm"
-        systemPassword: "P@ssw0rd"
-        systemClientToken: Basic aW50ZXJuYWw6aW50ZXJuYWw=
+    uaa-path: /config/tenants/XM/otp/uaaconfig.yml
     lep:
         tenant-script-storage: XM_MS_CONFIG
         lep-resource-path-pattern: /config/tenants/{tenantName}/entity/lep/resources/**/*
