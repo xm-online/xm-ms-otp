@@ -75,8 +75,8 @@ public class OneTimePasswordResourceIntTest {
     private static final MediaType APPLICATION_JSON_UTF8 = new MediaType(
         MediaType.APPLICATION_JSON.getType(),
         MediaType.APPLICATION_JSON.getSubtype(),
-        Charset.forName("utf8")
-    );
+        Charset.forName("utf8"));
+
     private static final int TTL = 600;
     private static final Integer MAX_RETRIES = 3;
     private static final int LENGTH = 6;
@@ -126,7 +126,6 @@ public class OneTimePasswordResourceIntTest {
 
         }
     }
-
 
     @SneakyThrows
     @Before
@@ -371,6 +370,7 @@ public class OneTimePasswordResourceIntTest {
 
     /**
      * Creates the otp entity.
+     *
      * @return OneTimePassword entity
      */
     private OneTimePassword createOtp() {

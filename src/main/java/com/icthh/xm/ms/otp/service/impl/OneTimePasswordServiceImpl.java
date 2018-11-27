@@ -68,7 +68,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         String randomPasswrd = generex.random();
 
         //build domain
-        OneTimePassword otp = getOneTimePassword(oneTimePasswordDTO, oneType, randomPasswrd);
+        OneTimePassword otp = buildOtp(oneTimePasswordDTO, oneType, randomPasswrd);
 
         String message = oneType.getMessage().getEn().replaceAll("\\$\\{otp}", randomPasswrd);
         oneTimePasswordRepository.saveAndFlush(otp);
@@ -78,9 +78,9 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     }
 
 
-    private OneTimePassword getOneTimePassword(OneTimePasswordDTO oneTimePasswordDTO,
-                                               OtpSpec.OtpTypeSpec oneType,
-                                               String randomPasswrd) {
+    private OneTimePassword buildOtp(OneTimePasswordDTO oneTimePasswordDTO,
+                                     OtpSpec.OtpTypeSpec oneType,
+                                     String randomPasswrd) {
         String sha256hex = DigestUtils.sha256Hex(randomPasswrd);
         OneTimePassword oneTimePassword = new OneTimePassword();
         Instant startDate = Instant.now();
@@ -104,7 +104,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
         if (passwordEntity.getStateKey() != StateKey.ACTIVE
             || passwordEntity.getEndDate().isBefore(Instant.now())
-            || passwordEntity.getRetries() >= getOneTypeSpec(passwordEntity.getTypeKey()).getMaxRetries()
+            || passwordEntity.getRetries() >= otpSpecService.getOneTypeSpec(passwordEntity.getTypeKey()).getMaxRetries()
             || !passwordEntity.getPasswordHash().equals(DigestUtils.sha256Hex(oneTimePasswordDTO.getOtp()))) {
 
             //if not - retries+
@@ -116,22 +116,6 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
             passwordEntity.setStateKey(StateKey.VERIFIED);
             oneTimePasswordRepository.save(passwordEntity);
         }
-    }
-
-    private OtpSpec.OtpTypeSpec getOneTypeSpec(String typeKey) {
-        List<OtpSpec.OtpTypeSpec> types = otpSpecService.getOtpSpec().getTypes();
-        OtpSpec.OtpTypeSpec oneType = null;
-        for (OtpSpec.OtpTypeSpec type : types) {
-            if (type.getKey().equals(typeKey)) {
-                oneType = type;
-            }
-        }
-        if (oneType == null) {
-            throw new IllegalArgumentException(
-                String.format("Profile %s not found", typeKey)
-            );
-        }
-        return oneType;
     }
 
     /**
