@@ -22,6 +22,7 @@ public class OtpSpec {
         private Integer length;
         private Integer maxRetries;
         private Integer ttl;
+        private String otpSenderId;
     }
 
     @Data

@@ -22,7 +22,8 @@ public class ApplicationProperties {
     private String kafkaSystemQueue;
     private boolean timelinesEnabled;
     private String specPath;
-
+    private String communicationUrl;
+    private String uaaPath;
 
     private final Lep lep = new Lep();
 
@@ -34,4 +35,5 @@ public class ApplicationProperties {
         private TenantScriptStorage tenantScriptStorage;
         private String lepResourcePathPattern;
     }
+
 }

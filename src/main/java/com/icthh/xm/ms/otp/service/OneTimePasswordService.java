@@ -14,10 +14,10 @@ public interface OneTimePasswordService {
     /**
      * Save a oneTimePassword.
      *
-     * @param oneTimePasswordDTO the entity to save
+     * @param oneTimePasswordDTO the entity to generate
      * @return the persisted entity
      */
-    OneTimePasswordDTO save(OneTimePasswordDTO oneTimePasswordDTO);
+    OneTimePasswordDTO generate(OneTimePasswordDTO oneTimePasswordDTO);
 
 
     /**
