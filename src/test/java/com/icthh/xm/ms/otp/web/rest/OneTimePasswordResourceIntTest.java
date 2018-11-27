@@ -22,7 +22,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
@@ -30,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -40,8 +37,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.Validator;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -66,17 +61,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 public class OneTimePasswordResourceIntTest {
 
-    public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(
+    private static final MediaType APPLICATION_JSON_UTF8 = new MediaType(
         MediaType.APPLICATION_JSON.getType(),
         MediaType.APPLICATION_JSON.getSubtype(),
         Charset.forName("utf8")
     );
-    public static final int TTL = 600;
-    public static final Integer MAX_RETRIES = 3;
-    public static final int LENGTH = 6;
-    public static final String RECEIVER = "+380631234567";
-    public static final String TYPE_KEY = "TYPE1";
-    public static final String OTP_SENDER_ID = "Voodaphone";
+    private static final int TTL = 600;
+    private static final Integer MAX_RETRIES = 3;
+    private static final int LENGTH = 6;
+    private static final String RECEIVER = "+380631234567";
+    private static final String TYPE_KEY = "TYPE1";
+    private static final String OTP_SENDER_ID = "Voodaphone";
 
     private MockMvc restMockMvc;
 

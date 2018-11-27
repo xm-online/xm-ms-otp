@@ -91,8 +91,7 @@ public class CommunicationService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, this.getSystemToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
-        String url = otpSpecService.getUaaConfig().getCommunicationUrl()
-            + "/tmf-api/communicationManagement/v2/communicationMessage/send";
+        String url = otpSpecService.getUaaConfig().getCommunicationUrl()+ "/communicationMessage/send";
         CommunicationMessage body = new CommunicationMessage();
         body.setContent(message);
         body.setType("SMS");
