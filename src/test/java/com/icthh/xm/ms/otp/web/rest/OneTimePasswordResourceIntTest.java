@@ -114,15 +114,10 @@ public class OneTimePasswordResourceIntTest {
         public String getSystemToken() {
             return null;
         }
-    }
 
-
-    private class RestTemplateMock extends RestTemplate {
         @Override
-        public <T> ResponseEntity<T> exchange(
-            RequestEntity<?> requestEntity,
-            Class<T> responseType) throws RestClientException {
-            return null;
+        public void sendOneTimePassword(String message, String receiver, String senderId) {
+
         }
     }
 
@@ -162,9 +157,7 @@ public class OneTimePasswordResourceIntTest {
             oneTimePasswordRepository,
             oneTimePasswordMapper,
             otpSpecService,
-            new RestTemplateMock(),
-            new CommunicationServiceMock(),
-            applicationProperties
+            new CommunicationServiceMock()
         );
     }
 

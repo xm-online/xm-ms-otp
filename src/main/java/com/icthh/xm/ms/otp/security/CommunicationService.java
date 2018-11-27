@@ -1,6 +1,9 @@
 package com.icthh.xm.ms.otp.security;
 
 import com.icthh.xm.commons.tenant.TenantContextHolder;
+import com.icthh.xm.ms.otp.client.domain.CommunicationMessage;
+import com.icthh.xm.ms.otp.client.domain.Receiver;
+import com.icthh.xm.ms.otp.client.domain.Sender;
 import com.icthh.xm.ms.otp.domain.UaaConfig;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
 import lombok.extern.slf4j.Slf4j;
@@ -8,13 +11,18 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.springframework.http.HttpMethod.POST;
 
 @Component
 @Slf4j
@@ -77,6 +85,22 @@ public class CommunicationService {
         String token = response.get("token_type") + " " + response.get("access_token");
         log.info(token);
         return token;
+    }
+
+    public void sendOneTimePassword(String message, String receiver, String senderId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, this.getSystemToken());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String url = otpSpecService.getUaaConfig().getCommunicationUrl()
+            + "/tmf-api/communicationManagement/v2/communicationMessage/send";
+        CommunicationMessage body = new CommunicationMessage();
+        body.setContent(message);
+        body.setType("SMS");
+        body.setSender(new Sender(senderId));
+        body.setReceiver(new ArrayList<>());
+        body.getReceiver().add(new Receiver(receiver, receiver));
+        RequestEntity<Object> request = new RequestEntity<>(body, headers, POST, URI.create(url));
+        restTemplate.exchange(request, Object.class);
     }
 
 }

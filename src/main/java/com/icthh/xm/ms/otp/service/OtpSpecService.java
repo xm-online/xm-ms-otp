@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class OtpSpecService implements RefreshableConfiguration {
@@ -38,6 +40,22 @@ public class OtpSpecService implements RefreshableConfiguration {
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    public OtpSpec.OtpTypeSpec getOneTypeSpec(String typeKey) {
+        List<OtpSpec.OtpTypeSpec> types = this.getOtpSpec().getTypes();
+        OtpSpec.OtpTypeSpec oneType = null;
+        for (OtpSpec.OtpTypeSpec type : types) {
+            if (type.getKey().equals(typeKey)) {
+                oneType = type;
+            }
+        }
+        if (oneType == null) {
+            throw new IllegalArgumentException(
+                String.format("Profile %s not found", typeKey)
+            );
+        }
+        return oneType;
     }
 
     @Override
