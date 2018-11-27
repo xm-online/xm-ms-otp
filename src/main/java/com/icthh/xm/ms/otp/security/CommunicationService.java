@@ -35,22 +35,18 @@ public class CommunicationService {
 
     private final RestTemplate restTemplate;
 
-    public CommunicationService(
-        ApplicationProperties applicationProperties,
-        @Qualifier("loadBalancedRestTemplate") RestTemplate restTemplate,
-        TenantContextHolder tenantContext
-    ) {
+    public CommunicationService(ApplicationProperties applicationProperties,
+                                @Qualifier("loadBalancedRestTemplate") RestTemplate restTemplate,
+                                TenantContextHolder tenantContext) {
         this.applicationProperties = applicationProperties;
         this.restTemplate = restTemplate;
         this.tenantContext = tenantContext;
     }
 
-    public Map post(
-        String url,
-        Map <String, String> args,
-        Map<String, String> additionalHeaders,
-        MediaType mediaType
-    ) {
+    public Map post(String url,
+                    Map<String, String> args,
+                    Map<String, String> additionalHeaders,
+                    MediaType mediaType) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(mediaType);
 
@@ -67,7 +63,7 @@ public class CommunicationService {
 
         HttpEntity<MultiValueMap> request = new HttpEntity<MultiValueMap>(map, headers);
         log.info("Post to {} with args {}", url, args);
-        return restTemplate.postForEntity( url, request , Map.class ).getBody();
+        return restTemplate.postForEntity(url, request, Map.class).getBody();
     }
 
     public String getSystemToken() {
