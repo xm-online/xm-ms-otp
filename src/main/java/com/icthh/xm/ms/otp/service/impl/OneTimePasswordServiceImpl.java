@@ -5,8 +5,8 @@ import com.icthh.xm.ms.otp.client.domain.Receiver;
 import com.icthh.xm.ms.otp.client.domain.Sender;
 import com.icthh.xm.ms.otp.config.ApplicationProperties;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
-import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
+import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.security.CommunicationService;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
@@ -16,17 +16,6 @@ import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
 import com.mifmif.common.regex.Generex;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.time.Instant;
@@ -35,6 +24,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import static org.springframework.http.HttpMethod.POST;
 
@@ -129,7 +128,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         oneTimePassword.setTypeKey(oneTimePasswordDTO.getTypeKey());
         oneTimePassword.setReceiver(oneTimePasswordDTO.getReceiver());
         oneTimePassword.setPasswordHash(sha256hex);
-        oneTimePassword.setStateKey("ACTIVE");
+        oneTimePassword.setStateKey(StateKey.ACTIVE);
         return oneTimePassword;
     }
 

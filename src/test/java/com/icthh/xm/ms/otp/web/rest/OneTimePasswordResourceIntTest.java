@@ -1,11 +1,5 @@
 package com.icthh.xm.ms.otp.web.rest;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-
-import java.time.Instant;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -26,12 +20,17 @@ import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.impl.OneTimePasswordServiceImpl;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.icthh.xm.ms.otp.web.rest.errors.ExceptionTranslator;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.time.Instant;
+import java.util.ArrayList;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
@@ -54,12 +53,10 @@ import org.springframework.validation.Validator;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -207,7 +204,7 @@ public class OneTimePasswordResourceIntTest {
         Assert.assertEquals(actualTtl / 1000, TTL);
         Assert.assertEquals(byId.getReceiver(), RECEIVER);
         Assert.assertEquals(byId.getTypeKey(), TYPE_KEY);
-        Assert.assertEquals(byId.getStateKey(), "ACTIVE");
+        Assert.assertEquals(byId.getStateKey(), StateKey.ACTIVE);
         Assert.assertEquals(byId.getRetries(), MAX_RETRIES);
         Assert.assertEquals(byId.getReceiverTypeKey(), ReceiverTypeKey.PHONE_NUMBER);
     }
