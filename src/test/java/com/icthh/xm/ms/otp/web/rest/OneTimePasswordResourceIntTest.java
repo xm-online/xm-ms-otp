@@ -38,8 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -50,8 +48,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.Validator;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -76,17 +72,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 public class OneTimePasswordResourceIntTest {
 
-    public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(
+    private static final MediaType APPLICATION_JSON_UTF8 = new MediaType(
         MediaType.APPLICATION_JSON.getType(),
         MediaType.APPLICATION_JSON.getSubtype(),
         Charset.forName("utf8")
     );
-    public static final int TTL = 600;
-    public static final Integer MAX_RETRIES = 3;
-    public static final int LENGTH = 6;
-    public static final String RECEIVER = "+380631234567";
-    public static final String TYPE_KEY = "TYPE1";
-    public static final String OTP_SENDER_ID = "Voodaphone";
+    private static final int TTL = 600;
+    private static final Integer MAX_RETRIES = 3;
+    private static final int LENGTH = 6;
+    private static final String RECEIVER = "+380631234567";
+    private static final String TYPE_KEY = "TYPE1";
+    private static final String OTP_SENDER_ID = "Voodaphone";
 
     private MockMvc restMockMvc;
 
@@ -124,15 +120,10 @@ public class OneTimePasswordResourceIntTest {
         public String getSystemToken() {
             return null;
         }
-    }
 
-
-    private class RestTemplateMock extends RestTemplate {
         @Override
-        public <T> ResponseEntity<T> exchange(
-            RequestEntity<?> requestEntity,
-            Class<T> responseType) throws RestClientException {
-            return null;
+        public void sendOneTimePassword(String message, String receiver, String senderId) {
+
         }
     }
 
@@ -172,9 +163,7 @@ public class OneTimePasswordResourceIntTest {
             oneTimePasswordRepository,
             oneTimePasswordMapper,
             otpSpecService,
-            new RestTemplateMock(),
-            new CommunicationServiceMock(),
-            applicationProperties
+            new CommunicationServiceMock()
         );
     }
 

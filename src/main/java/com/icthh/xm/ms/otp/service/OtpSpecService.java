@@ -6,11 +6,13 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.icthh.xm.commons.config.client.api.RefreshableConfiguration;
 import com.icthh.xm.ms.otp.config.ApplicationProperties;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
-import com.icthh.xm.ms.otp.domain.UaaConfig;
+import com.icthh.xm.ms.otp.domain.TenantConfig;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,24 +27,40 @@ public class OtpSpecService implements RefreshableConfiguration {
 
     @Getter
     @Setter
-    private UaaConfig uaaConfig;
+    private TenantConfig tenantConfig;
 
     @Override
     public void onRefresh(String updatedKey, String config) {
         try {
             if (appProps.getSpecPath().equals(updatedKey)) {
                 this.otpSpec = mapper.readValue(config, OtpSpec.class);
-            } else if (appProps.getUaaPath().equals(updatedKey)) {
-                this.uaaConfig = mapper.readValue(config, UaaConfig.class);
+            } else if (appProps.getTenantPath().equals(updatedKey)) {
+                this.tenantConfig = mapper.readValue(config, TenantConfig.class);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
     }
 
+    public OtpSpec.OtpTypeSpec getOneTypeSpec(String typeKey) {
+        List<OtpSpec.OtpTypeSpec> types = this.getOtpSpec().getTypes();
+        OtpSpec.OtpTypeSpec oneType = null;
+        for (OtpSpec.OtpTypeSpec type : types) {
+            if (type.getKey().equals(typeKey)) {
+                oneType = type;
+            }
+        }
+        if (oneType == null) {
+            throw new IllegalArgumentException(
+                String.format("Profile %s not found", typeKey)
+            );
+        }
+        return oneType;
+    }
+
     @Override
     public boolean isListeningConfiguration(String updatedKey) {
-        return appProps.getSpecPath().equals(updatedKey) || appProps.getUaaPath().equals(updatedKey);
+        return appProps.getSpecPath().equals(updatedKey) || appProps.getTenantPath().equals(updatedKey);
     }
 
     @Override
