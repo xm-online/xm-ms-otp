@@ -1,7 +1,6 @@
 package com.icthh.xm.ms.otp.security;
-import com.icthh.xm.commons.tenant.TenantContext;
+
 import com.icthh.xm.commons.tenant.TenantContextHolder;
-import com.icthh.xm.ms.otp.config.ApplicationProperties;
 import com.icthh.xm.ms.otp.domain.UaaConfig;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
 import lombok.extern.slf4j.Slf4j;
@@ -16,12 +15,10 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @Slf4j
 public class CommunicationService {
-
 
     private final TenantContextHolder tenantContext;
     private final OtpSpecService otpSpecService;
@@ -55,7 +52,7 @@ public class CommunicationService {
 
         headers.set("x-tenant", tenantContext.getContext().getTenantKey().get().getValue());
 
-        HttpEntity<MultiValueMap> request = new HttpEntity<MultiValueMap>(map, headers);
+        HttpEntity<MultiValueMap> request = new HttpEntity<>(map, headers);
         log.info("Post to {} with args {}", url, args);
         return restTemplate.postForEntity(url, request, Map.class).getBody();
     }
