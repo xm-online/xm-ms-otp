@@ -35,13 +35,22 @@ public class CommunicationService {
 
     private final RestTemplate restTemplate;
 
-    public CommunicationService(ApplicationProperties applicationProperties, @Qualifier("loadBalancedRestTemplate") RestTemplate restTemplate, TenantContextHolder tenantContext) {
+    public CommunicationService(
+        ApplicationProperties applicationProperties,
+        @Qualifier("loadBalancedRestTemplate") RestTemplate restTemplate,
+        TenantContextHolder tenantContext
+    ) {
         this.applicationProperties = applicationProperties;
         this.restTemplate = restTemplate;
         this.tenantContext = tenantContext;
     }
 
-    public Map post(String url, Map <String, String> args, Map<String, String> additionalHeaders, MediaType mediaType) {
+    public Map post(
+        String url,
+        Map <String, String> args,
+        Map<String, String> additionalHeaders,
+        MediaType mediaType
+    ) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(mediaType);
 
@@ -65,8 +74,11 @@ public class CommunicationService {
 
         AuthValue authValue = (AuthValue) atomicReference.get();
 
-        if (authValue != null && ((System.currentTimeMillis() / 1000) - authValue.createTokenTime) < (authValue.expiresIn - 60)) {
-            return authValue.tokenType + " " + authValue.accessToken;
+        if (authValue != null) {
+            long diffTime = (System.currentTimeMillis() / 1000) - authValue.createTokenTime;
+            if (diffTime < (authValue.expiresIn - 60)) {
+                return authValue.tokenType + " " + authValue.accessToken;
+            }
         }
 
         Map<String, String> body = new HashMap<>();
@@ -78,7 +90,12 @@ public class CommunicationService {
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", uaa.getSystemClientToken());
-        Map response = this.post(uaa.getSystemAuthUrl(), body, headers, MediaType.APPLICATION_FORM_URLENCODED);
+        Map response = this.post(
+            uaa.getSystemAuthUrl(),
+            body,
+            headers,
+            MediaType.APPLICATION_FORM_URLENCODED
+        );
         AuthValue auth = new AuthValue();
         auth.accessToken = (String) response.get("access_token");
         auth.tokenType = (String) response.get("token_type");

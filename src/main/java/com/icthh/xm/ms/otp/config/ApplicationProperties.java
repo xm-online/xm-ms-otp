@@ -25,7 +25,6 @@ public class ApplicationProperties {
     private String communicationUrl;
     private String otpSenderId;
 
-
     private final Lep lep = new Lep();
     private final Uaa uaa = new Uaa();
 
