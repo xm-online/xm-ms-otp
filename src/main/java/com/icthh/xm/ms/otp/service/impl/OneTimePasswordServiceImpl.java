@@ -3,6 +3,7 @@ package com.icthh.xm.ms.otp.service.impl;
 import com.google.common.hash.Hashing;
 import com.icthh.xm.commons.config.client.repository.TenantConfigRepository;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
+import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
@@ -12,6 +13,7 @@ import com.icthh.xm.ms.otp.service.OtpSpecService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDTO;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
+import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
 import com.mifmif.common.regex.Generex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,20 +104,25 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     }
 
     @Override
-    public OneTimePasswordCheckDTO check(OneTimePasswordCheckDTO oneTimePasswordDTO) {
-        //1. get otp from db
+    public void check(OneTimePasswordCheckDTO oneTimePasswordDTO) {
 
-        //2. check state (must be ACTIVE)
+        OneTimePassword passwordEntity = oneTimePasswordRepository.getOne(oneTimePasswordDTO.getId());
 
-        //3. check expiration date
+        if (passwordEntity.getStateKey() != StateKey.ACTIVE
+            || passwordEntity.getEndDate().isBefore(Instant.now())
+            || passwordEntity.getRetries() >= getOneTypeSpec(passwordEntity.getTypeKey()).getMaxRetries()
+            || !passwordEntity.getPasswordHash().equals(oneTimePasswordDTO.getOtp())) {
 
-        //4. check retries < maxRetries
-
-        //5. check otp (hash 256)
-        //if success -> change state to VERIFIED
-        //if not - retries+
-
-        return null;
+            //if not - retries+
+            int retries = passwordEntity.getRetries();
+            retries++;
+            passwordEntity.setRetries(retries);
+            oneTimePasswordRepository.save(passwordEntity);
+            throw new OtpInvalidPasswordException();
+        } else {
+            passwordEntity.setStateKey(StateKey.VERIFIED);
+            oneTimePasswordRepository.save(passwordEntity);
+        }
     }
 
     private OtpSpec.OtpTypeSpec getOneTypeSpec(String typeKey) {

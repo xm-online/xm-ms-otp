@@ -21,12 +21,11 @@ public interface OneTimePasswordService {
 
 
     /**
-     * Validate one time password
+     * Validates one time password.
      *
      * @param oneTimePasswordDTO the entity to save
-     * @return the persisted entity
      */
-    OneTimePasswordCheckDTO check(OneTimePasswordCheckDTO oneTimePasswordDTO);
+    void check(OneTimePasswordCheckDTO oneTimePasswordDTO);
 
     /**
      * Get all the oneTimePasswords.

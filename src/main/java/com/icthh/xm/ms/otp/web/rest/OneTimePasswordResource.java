@@ -67,7 +67,7 @@ public class OneTimePasswordResource {
         if (oneTimePasswordCheckDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-
+        oneTimePasswordService.check(oneTimePasswordCheckDTO);
         return ResponseEntity.ok(oneTimePasswordCheckDTO);
     }
 }

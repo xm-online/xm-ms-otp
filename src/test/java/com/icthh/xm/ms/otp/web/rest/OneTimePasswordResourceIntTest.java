@@ -1,5 +1,11 @@
 package com.icthh.xm.ms.otp.web.rest;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+
+import java.time.Instant;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -8,16 +14,20 @@ import com.icthh.xm.ms.otp.OtpApp;
 import com.icthh.xm.ms.otp.config.ApplicationProperties;
 import com.icthh.xm.ms.otp.config.SecurityBeanOverrideConfiguration;
 import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
+import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDTO;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.impl.OneTimePasswordServiceImpl;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.icthh.xm.ms.otp.web.rest.errors.ExceptionTranslator;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,15 +42,18 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.Validator;
+import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -89,6 +102,9 @@ public class OneTimePasswordResourceIntTest {
     private ApplicationProperties applicationProperties;
 
     @Autowired
+    private RestTemplate loadBalancedRestTemplate;
+
+    @Autowired
     OtpSpecService otpSpecService;
 
 
@@ -115,7 +131,8 @@ public class OneTimePasswordResourceIntTest {
         return new OneTimePasswordServiceImpl(
             oneTimePasswordRepository,
             oneTimePasswordMapper,
-            otpSpecService
+            otpSpecService,
+            loadBalancedRestTemplate
         );
     }
 
@@ -140,11 +157,188 @@ public class OneTimePasswordResourceIntTest {
         log.info(result.getResponse().getContentAsString());
     }
 
-    private String toJson(OneTimePasswordDTO tdo) throws JsonProcessingException {
+    @Test
+    @Transactional
+    public void testCheckOneTimePassword() throws Exception {
+
+        //init DB
+        OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
+
+        //test request
+        OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
+        dto.setId(otp.getId());
+        dto.setOtp(DigestUtils.sha256Hex("123"));
+        String requestJson = toJson(dto);
+
+        MockHttpServletRequestBuilder postContent = post("/api/one-time-password/check")
+            .contentType(APPLICATION_JSON_UTF8)
+            .content(requestJson);
+        MvcResult result = restMockMvc
+            .perform(postContent)
+            .andExpect(status().isOk())
+            .andExpect(MockMvcResultMatchers.handler().methodName("checkOneTimePassword"))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andReturn();
+
+        OneTimePassword newOtp = oneTimePasswordRepository.getOne(otp.getId());
+        assertSame(StateKey.VERIFIED, newOtp.getStateKey());
+        assertEquals(newOtp.getRetries().intValue(), 1);
+
+        log.info(result.getResponse().getContentAsString());
+    }
+
+    @Test
+    @Transactional
+    public void testCheckOneTimePasswordIncorrectOtp() throws Exception {
+
+        //init DB
+        OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
+
+        //test request
+        OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
+        dto.setId(otp.getId());
+        dto.setOtp(DigestUtils.sha256Hex("1234"));
+        String requestJson = toJson(dto);
+
+        MockHttpServletRequestBuilder postContent = post("/api/one-time-password/check")
+            .contentType(APPLICATION_JSON_UTF8)
+            .content(requestJson);
+        MvcResult result = restMockMvc
+            .perform(postContent)
+            .andExpect(status().is4xxClientError())
+            .andExpect(MockMvcResultMatchers.handler().methodName("checkOneTimePassword"))
+            .andExpect(jsonPath("$.title").value(containsString("Incorrect password")))
+            .andExpect(status().isBadRequest())
+            .andReturn();
+        OneTimePassword newOtp = oneTimePasswordRepository.getOne(otp.getId());
+        assertSame(StateKey.ACTIVE, newOtp.getStateKey());
+        assertEquals(newOtp.getRetries().intValue(), 2);
+
+        log.info(result.getResponse().getContentAsString());
+    }
+
+    @Test
+    @Transactional
+    public void testCheckOneTimePasswordNotActive() throws Exception {
+
+        //init DB
+        OneTimePassword otpToCheck = createOtp();
+        otpToCheck.setStateKey(StateKey.VERIFIED);
+        OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(otpToCheck);
+
+        //test request
+        OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
+        dto.setId(otp.getId());
+        dto.setOtp(DigestUtils.sha256Hex("123"));
+        String requestJson = toJson(dto);
+
+        MockHttpServletRequestBuilder postContent = post("/api/one-time-password/check")
+            .contentType(APPLICATION_JSON_UTF8)
+            .content(requestJson);
+        MvcResult result = restMockMvc
+            .perform(postContent)
+            .andExpect(status().is4xxClientError())
+            .andExpect(MockMvcResultMatchers.handler().methodName("checkOneTimePassword"))
+            .andExpect(jsonPath("$.title").value(containsString("Incorrect password")))
+            .andExpect(status().isBadRequest())
+            .andReturn();
+
+        OneTimePassword newOtp = oneTimePasswordRepository.getOne(otp.getId());
+        assertSame(StateKey.VERIFIED, newOtp.getStateKey());
+        assertEquals(newOtp.getRetries().intValue(), 2);
+
+        log.info(result.getResponse().getContentAsString());
+    }
+
+    @Test
+    @Transactional
+    public void testCheckOneTimePasswordIncorrectDate() throws Exception {
+
+        //init DB
+        OneTimePassword otpToCheck = createOtp();
+        otpToCheck.setEndDate(Instant.ofEpochMilli(0));
+        OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(otpToCheck);
+
+        //test request
+        OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
+        dto.setId(otp.getId());
+        dto.setOtp(DigestUtils.sha256Hex("123"));
+        String requestJson = toJson(dto);
+
+        MockHttpServletRequestBuilder postContent = post("/api/one-time-password/check")
+            .contentType(APPLICATION_JSON_UTF8)
+            .content(requestJson);
+        MvcResult result = restMockMvc
+            .perform(postContent)
+            .andExpect(status().is4xxClientError())
+            .andExpect(MockMvcResultMatchers.handler().methodName("checkOneTimePassword"))
+            .andExpect(jsonPath("$.title").value(containsString("Incorrect password")))
+            .andExpect(status().isBadRequest())
+            .andReturn();
+
+        OneTimePassword newOtp = oneTimePasswordRepository.getOne(otp.getId());
+        assertSame(StateKey.ACTIVE, newOtp.getStateKey());
+        assertEquals(newOtp.getRetries().intValue(), 2);
+
+        log.info(result.getResponse().getContentAsString());
+    }
+
+    @Test
+    @Transactional
+    public void testCheckOneTimePasswordIncorrectMaxRetries() throws Exception {
+
+        //init DB
+        OneTimePassword otpToCheck = createOtp();
+        otpToCheck.setRetries(3);
+        OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(otpToCheck);
+
+        //test request
+        OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
+        dto.setId(otp.getId());
+        dto.setOtp(DigestUtils.sha256Hex("123"));
+        String requestJson = toJson(dto);
+
+        MockHttpServletRequestBuilder postContent = post("/api/one-time-password/check")
+            .contentType(APPLICATION_JSON_UTF8)
+            .content(requestJson);
+        MvcResult result = restMockMvc
+            .perform(postContent)
+            .andExpect(status().is4xxClientError())
+            .andExpect(MockMvcResultMatchers.handler().methodName("checkOneTimePassword"))
+            .andExpect(jsonPath("$.title").value(containsString("Incorrect password")))
+            .andExpect(status().isBadRequest())
+            .andReturn();
+
+        OneTimePassword newOtp = oneTimePasswordRepository.getOne(otp.getId());
+        assertSame(StateKey.ACTIVE, newOtp.getStateKey());
+        assertEquals(newOtp.getRetries().intValue(), 4);
+
+        log.info(result.getResponse().getContentAsString());
+    }
+
+    private String toJson(Object tdo) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
         return ow.writeValueAsString(tdo);
+    }
+
+    /**
+     * Creates the otp entity.
+     * @return OneTimePassword entity
+     */
+    private OneTimePassword createOtp() {
+        OneTimePassword oneTimePassword = new OneTimePassword();
+        oneTimePassword.setPasswordHash(DigestUtils.sha256Hex("123"));
+        oneTimePassword.setEndDate(Instant.MAX);
+        oneTimePassword.setReceiver("receiver");
+        oneTimePassword.setReceiverTypeKey(ReceiverTypeKey.IP);
+        oneTimePassword.setStartDate(Instant.MIN);
+        oneTimePassword.setTypeKey("TYPE1");
+        oneTimePassword.setStateKey(StateKey.ACTIVE);
+        oneTimePassword.setRetries(1);
+
+        return oneTimePassword;
     }
 
 }
