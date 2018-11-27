@@ -3,13 +3,15 @@ package com.icthh.xm.ms.otp.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDTO;
-import com.icthh.xm.ms.otp.web.rest.errors.BadRequestAlertException;
-
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
+import com.icthh.xm.ms.otp.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.net.URISyntaxException;
