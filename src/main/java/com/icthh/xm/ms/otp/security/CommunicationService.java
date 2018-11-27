@@ -20,14 +20,6 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class CommunicationService {
 
-    private final static AtomicReference atomicReference = new AtomicReference();
-
-    static class AuthValue {
-        Long createTokenTime;
-        Integer expiresIn;
-        String tokenType;
-        String accessToken;
-    }
 
     private final ApplicationProperties applicationProperties;
     private final TenantContextHolder tenantContext;
@@ -54,7 +46,7 @@ public class CommunicationService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(mediaType);
 
-        MultiValueMap map = new LinkedMultiValueMap();
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         for (Map.Entry<String, String> arg : args.entrySet()) {
             map.add(arg.getKey(), arg.getValue());
         }
@@ -67,26 +59,16 @@ public class CommunicationService {
 
         HttpEntity<MultiValueMap> request = new HttpEntity<MultiValueMap>(map, headers);
         log.info("Post to {} with args {}", url, args);
-        return restTemplate.postForEntity( url, request , Map.class ).getBody();
+        return restTemplate.postForEntity(url, request , Map.class ).getBody();
     }
 
     public String getSystemToken() {
-
-        AuthValue authValue = (AuthValue) atomicReference.get();
-
-        if (authValue != null) {
-            long diffTime = (System.currentTimeMillis() / 1000) - authValue.createTokenTime;
-            if (diffTime < (authValue.expiresIn - 60)) {
-                return authValue.tokenType + " " + authValue.accessToken;
-            }
-        }
 
         Map<String, String> body = new HashMap<>();
         body.put("grant_type", "password");
         ApplicationProperties.Uaa uaa = applicationProperties.getUaa();
         body.put("username", uaa.getSystemUsername());
         body.put("password", uaa.getSystemPassword());
-
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", uaa.getSystemClientToken());
@@ -96,14 +78,8 @@ public class CommunicationService {
             headers,
             MediaType.APPLICATION_FORM_URLENCODED
         );
-        AuthValue auth = new AuthValue();
-        auth.accessToken = (String) response.get("access_token");
-        auth.tokenType = (String) response.get("token_type");
-        auth.expiresIn = (Integer) response.get("expires_in");
-        auth.createTokenTime = System.currentTimeMillis() / 1000;
-        atomicReference.set(auth);
 
-        String token = auth.tokenType + " " + auth.accessToken;
+        String token = response.get("token_type") + " " + response.get("access_token");
         log.info(token);
         return token;
     }
