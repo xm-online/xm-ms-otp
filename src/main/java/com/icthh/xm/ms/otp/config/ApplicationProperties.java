@@ -22,7 +22,7 @@ public class ApplicationProperties {
     private String kafkaSystemQueue;
     private boolean timelinesEnabled;
     private String specPath;
-    private String uaaPath;
+    private String tenantPath;
 
     private final Lep lep = new Lep();
 

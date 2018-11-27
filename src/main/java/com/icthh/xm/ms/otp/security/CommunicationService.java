@@ -69,7 +69,7 @@ public class CommunicationService {
 
         Map<String, String> body = new HashMap<>();
         body.put("grant_type", "password");
-        UaaConfig uaa = otpSpecService.getUaaConfig();
+        UaaConfig uaa = otpSpecService.getTenantConfig().getUaa();
         body.put("username", uaa.getSystemUsername());
         body.put("password", uaa.getSystemPassword());
 
@@ -91,7 +91,7 @@ public class CommunicationService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, this.getSystemToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
-        String url = otpSpecService.getUaaConfig().getCommunicationUrl()+ "/communicationMessage/send";
+        String url = otpSpecService.getTenantConfig().getCommunication().getUrl()+ "/communicationMessage/send";
         CommunicationMessage body = new CommunicationMessage();
         body.setContent(message);
         body.setType("SMS");

@@ -9,5 +9,4 @@ public class UaaConfig {
     private String systemUsername;
     private String systemPassword;
     private String systemClientToken;
-    private String communicationUrl;
 }
