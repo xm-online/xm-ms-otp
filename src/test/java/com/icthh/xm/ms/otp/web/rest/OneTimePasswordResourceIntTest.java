@@ -219,7 +219,7 @@ public class OneTimePasswordResourceIntTest {
         //test request
         OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
         dto.setId(otp.getId());
-        dto.setOtp(DigestUtils.sha256Hex("123"));
+        dto.setOtp("123");
         String requestJson = toJson(dto);
 
         MockHttpServletRequestBuilder postContent = post("/api/one-time-password/check")
@@ -249,7 +249,7 @@ public class OneTimePasswordResourceIntTest {
         //test request
         OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
         dto.setId(otp.getId());
-        dto.setOtp(DigestUtils.sha256Hex("1234"));
+        dto.setOtp("1234");
         String requestJson = toJson(dto);
 
         MockHttpServletRequestBuilder postContent = post("/api/one-time-password/check")
@@ -281,7 +281,7 @@ public class OneTimePasswordResourceIntTest {
         //test request
         OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
         dto.setId(otp.getId());
-        dto.setOtp(DigestUtils.sha256Hex("123"));
+        dto.setOtp("123");
         String requestJson = toJson(dto);
 
         MockHttpServletRequestBuilder postContent = post("/api/one-time-password/check")
@@ -314,7 +314,7 @@ public class OneTimePasswordResourceIntTest {
         //test request
         OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
         dto.setId(otp.getId());
-        dto.setOtp(DigestUtils.sha256Hex("123"));
+        dto.setOtp("123");
         String requestJson = toJson(dto);
 
         MockHttpServletRequestBuilder postContent = post("/api/one-time-password/check")
@@ -347,7 +347,7 @@ public class OneTimePasswordResourceIntTest {
         //test request
         OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
         dto.setId(otp.getId());
-        dto.setOtp(DigestUtils.sha256Hex("123"));
+        dto.setOtp("123");
         String requestJson = toJson(dto);
 
         MockHttpServletRequestBuilder postContent = post("/api/one-time-password/check")
