@@ -80,11 +80,17 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     public OneTimePasswordDTO generate(OneTimePasswordDTO oneTimePasswordDTO) {
         log.debug("Request to generate OneTimePassword : {}", oneTimePasswordDTO);
         OtpSpec.OtpTypeSpec oneType = getOneTypeSpec(oneTimePasswordDTO.getTypeKey());
+
+        //generate otp
         Generex generex = new Generex(oneType.getPattern());
         String randomPasswrd = generex.random();
+
+        //build domain
         OneTimePassword otp = getOneTimePassword(oneTimePasswordDTO, oneType, randomPasswrd);
+
         String message = oneType.getMessage().getEn().replaceAll("\\$\\{otp}", randomPasswrd);
         oneTimePasswordRepository.saveAndFlush(otp);
+
         sendOneTimePassword(message, otp.getReceiver());
         return oneTimePasswordMapper.toDto(otp);
     }
