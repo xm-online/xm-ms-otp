@@ -1,6 +1,5 @@
 package com.icthh.xm.ms.otp.service;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.icthh.xm.commons.config.client.api.RefreshableConfiguration;
@@ -42,7 +41,7 @@ public class OtpSpecService implements RefreshableConfiguration {
         }
     }
 
-    public OtpSpec.OtpTypeSpec getOneTypeSpec(String typeKey) {
+    public OtpSpec.OtpTypeSpec getOtpTypeSpec(String typeKey) {
         List<OtpSpec.OtpTypeSpec> types = this.getOtpSpec().getTypes();
         OtpSpec.OtpTypeSpec oneType = null;
         for (OtpSpec.OtpTypeSpec type : types) {

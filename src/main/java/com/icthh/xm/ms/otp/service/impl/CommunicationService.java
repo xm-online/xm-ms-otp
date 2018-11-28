@@ -1,4 +1,4 @@
-package com.icthh.xm.ms.otp.security;
+package com.icthh.xm.ms.otp.service.impl;
 
 import com.icthh.xm.commons.tenant.TenantContextHolder;
 import com.icthh.xm.ms.otp.client.domain.CommunicationMessage;
@@ -28,6 +28,14 @@ import static org.springframework.http.HttpMethod.POST;
 @Slf4j
 public class CommunicationService {
 
+    public static final String GRANT_TYPE = "grant_type";
+    public static final String PASSWORD = "password";
+    public static final String USERNAME = "username";
+    public static final String PASSWORD_KEY = "password";
+    public static final String AUTHORIZATION = "Authorization";
+    public static final String TOKEN_TYPE = "token_type";
+    public static final String ACCESS_TOKEN = "access_token";
+    public static final String SMS = "SMS";
     private final TenantContextHolder tenantContext;
     private final OtpSpecService otpSpecService;
 
@@ -68,13 +76,13 @@ public class CommunicationService {
     public String getSystemToken() {
 
         Map<String, String> body = new HashMap<>();
-        body.put("grant_type", "password");
+        body.put(GRANT_TYPE, PASSWORD);
         UaaConfig uaa = otpSpecService.getTenantConfig().getUaa();
-        body.put("username", uaa.getSystemUsername());
-        body.put("password", uaa.getSystemPassword());
+        body.put(USERNAME, uaa.getSystemUsername());
+        body.put(PASSWORD_KEY, uaa.getSystemPassword());
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", uaa.getSystemClientToken());
+        headers.put(AUTHORIZATION, uaa.getSystemClientToken());
         Map response = this.post(
             uaa.getSystemAuthUrl(),
             body,
@@ -82,7 +90,7 @@ public class CommunicationService {
             MediaType.APPLICATION_FORM_URLENCODED
         );
 
-        String token = response.get("token_type") + " " + response.get("access_token");
+        String token = response.get(TOKEN_TYPE) + " " + response.get(ACCESS_TOKEN);
         log.info(token);
         return token;
     }
@@ -93,11 +101,11 @@ public class CommunicationService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         String url = otpSpecService.getTenantConfig().getCommunication().getUrl()+ "/communicationMessage/send";
         CommunicationMessage body = new CommunicationMessage();
-        body.setContent(message);
-        body.setType("SMS");
-        body.setSender(new Sender(senderId));
-        body.setReceiver(new ArrayList<>());
-        body.getReceiver().add(new Receiver(receiver, receiver));
+        body.setContent(message)
+            .setType(SMS)
+            .setSender(new Sender(senderId))
+            .setReceiver(new ArrayList<>())
+            .getReceiver().add(new Receiver(receiver, receiver));
         RequestEntity<Object> request = new RequestEntity<>(body, headers, POST, URI.create(url));
         restTemplate.exchange(request, Object.class);
     }

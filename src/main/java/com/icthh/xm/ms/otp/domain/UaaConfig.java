@@ -1,6 +1,5 @@
 package com.icthh.xm.ms.otp.domain;
 
-
 import lombok.Data;
 
 @Data

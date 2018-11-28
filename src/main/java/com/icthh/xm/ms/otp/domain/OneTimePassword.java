@@ -1,10 +1,9 @@
 package com.icthh.xm.ms.otp.domain;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.Objects;
-
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,12 +15,18 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.Objects;
 
 /**
  * A OneTimePassword.
  */
 @Entity
 @Table(name = "one_time_password")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OneTimePassword implements Serializable {
 
     private static final long serialVersionUID = 1L;

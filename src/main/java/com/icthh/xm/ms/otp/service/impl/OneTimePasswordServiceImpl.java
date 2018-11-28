@@ -3,7 +3,6 @@ package com.icthh.xm.ms.otp.service.impl;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
-import com.icthh.xm.ms.otp.security.CommunicationService;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-@Transactional
 public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
     private final OtpSpecService otpSpecService;
@@ -56,7 +54,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     @Transactional
     public OneTimePasswordDTO generate(OneTimePasswordDTO oneTimePasswordDTO) {
         log.debug("Request to generate OneTimePassword : {}", oneTimePasswordDTO);
-        OtpSpec.OtpTypeSpec oneType = otpSpecService.getOneTypeSpec(oneTimePasswordDTO.getTypeKey());
+        OtpSpec.OtpTypeSpec oneType = otpSpecService.getOtpTypeSpec(oneTimePasswordDTO.getTypeKey());
 
         //generate otp
         Generex generex = new Generex(oneType.getPattern());
@@ -77,18 +75,18 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
                                                OtpSpec.OtpTypeSpec oneType,
                                                String randomPasswrd) {
         String sha256hex = DigestUtils.sha256Hex(randomPasswrd);
-        OneTimePassword oneTimePassword = new OneTimePassword();
         Instant startDate = Instant.now();
         Instant endDate = startDate.plusSeconds(oneType.getTtl());
-        oneTimePassword.startDate(startDate);
-        oneTimePassword.setEndDate(endDate);
-        oneTimePassword.setPasswordHash(randomPasswrd);
-        oneTimePassword.setReceiverTypeKey(oneType.getReceiverTypeKey());
-        oneTimePassword.setRetries(oneType.getMaxRetries());
-        oneTimePassword.setTypeKey(oneTimePasswordDTO.getTypeKey());
-        oneTimePassword.setReceiver(oneTimePasswordDTO.getReceiver());
-        oneTimePassword.setPasswordHash(sha256hex);
-        oneTimePassword.setStateKey("ACTIVE");
+        OneTimePassword oneTimePassword = OneTimePassword.builder()
+            .startDate(startDate)
+            .endDate(endDate)
+            .receiverTypeKey(oneType.getReceiverTypeKey())
+            .receiverTypeKey(oneType.getReceiverTypeKey())
+            .retries(oneType.getMaxRetries())
+            .typeKey(oneTimePasswordDTO.getTypeKey())
+            .receiver(oneTimePasswordDTO.getReceiver())
+            .passwordHash(sha256hex)
+            .stateKey("ACTIVE").build();
         return oneTimePassword;
     }
 
