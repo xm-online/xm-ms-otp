@@ -189,12 +189,12 @@ public class OneTimePasswordResourceIntTest {
         OneTimePasswordDTO oneTimePasswordDTO = toDto(respStr, OneTimePasswordDTO.class);
         OneTimePassword byId = oneTimePasswordRepository.findById(oneTimePasswordDTO.getId()).get();
         long actualTtl = byId.getEndDate().toEpochMilli() - byId.getStartDate().toEpochMilli();
-        Assert.assertEquals(actualTtl / 1000, TTL);
-        Assert.assertEquals(byId.getReceiver(), RECEIVER);
-        Assert.assertEquals(byId.getTypeKey(), TYPE_KEY);
-        Assert.assertEquals(byId.getStateKey(), StateKey.ACTIVE);
-        Assert.assertEquals(byId.getRetries(), MAX_RETRIES);
-        Assert.assertEquals(byId.getReceiverTypeKey(), ReceiverTypeKey.PHONE_NUMBER);
+        assertEquals(actualTtl / 1000, TTL);
+        assertEquals(byId.getReceiver(), RECEIVER);
+        assertEquals(byId.getTypeKey(), TYPE_KEY);
+        assertEquals(byId.getStateKey(), StateKey.ACTIVE);
+        assertEquals(byId.getRetries(), MAX_RETRIES);
+        assertEquals(byId.getReceiverTypeKey(), ReceiverTypeKey.PHONE_NUMBER);
     }
 
     @Test
