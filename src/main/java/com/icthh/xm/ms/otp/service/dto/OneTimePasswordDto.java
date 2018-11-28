@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 /**
  * A DTO for the OneTimePassword entity.
  */
-public class OneTimePasswordDTO implements Serializable {
+public class OneTimePasswordDto implements Serializable {
 
     private Long id;
 
@@ -64,11 +64,11 @@ public class OneTimePasswordDTO implements Serializable {
             return false;
         }
 
-        OneTimePasswordDTO oneTimePasswordDTO = (OneTimePasswordDTO) o;
-        if (oneTimePasswordDTO.getId() == null || getId() == null) {
+        OneTimePasswordDto oneTimePasswordDto = (OneTimePasswordDto) o;
+        if (oneTimePasswordDto.getId() == null || getId() == null) {
             return false;
         }
-        return Objects.equals(getId(), oneTimePasswordDTO.getId());
+        return Objects.equals(getId(), oneTimePasswordDto.getId());
     }
 
     @Override
@@ -78,7 +78,7 @@ public class OneTimePasswordDTO implements Serializable {
 
     @Override
     public String toString() {
-        return "OneTimePasswordDTO{" +
+        return "OneTimePasswordDto{" +
             "id=" + getId() +
             ", receiver='" + getReceiver() + "'" +
             ", receiverTypeKey='" + getReceiverTypeKey() + "'" +

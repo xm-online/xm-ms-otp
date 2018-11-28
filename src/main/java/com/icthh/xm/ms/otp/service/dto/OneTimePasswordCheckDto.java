@@ -5,9 +5,9 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * A DTO for the OneTimePasswordCheckDTO.
+ * A DTO for the OneTimePasswordCheckDto.
  */
-public class OneTimePasswordCheckDTO implements Serializable {
+public class OneTimePasswordCheckDto implements Serializable {
 
     @NotNull
     private Long id;
@@ -40,11 +40,11 @@ public class OneTimePasswordCheckDTO implements Serializable {
             return false;
         }
 
-        OneTimePasswordCheckDTO oneTimePasswordDTO = (OneTimePasswordCheckDTO) o;
-        if (oneTimePasswordDTO.getId() == null || getId() == null) {
+        OneTimePasswordCheckDto oneTimePasswordCheckDto = (OneTimePasswordCheckDto) o;
+        if (oneTimePasswordCheckDto.getId() == null || getId() == null) {
             return false;
         }
-        return Objects.equals(getId(), oneTimePasswordDTO.getId());
+        return Objects.equals(getId(), oneTimePasswordCheckDto.getId());
     }
 
     @Override
@@ -54,7 +54,7 @@ public class OneTimePasswordCheckDTO implements Serializable {
 
     @Override
     public String toString() {
-        return "OneTimePasswordDTO{" +
+        return "OneTimePasswordDto{" +
             "id=" + getId() +
             "}";
     }

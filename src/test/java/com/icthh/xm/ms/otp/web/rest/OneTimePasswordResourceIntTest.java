@@ -13,10 +13,10 @@ import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.service.impl.CommunicationService;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
-import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDTO;
-import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.impl.OneTimePasswordServiceImpl;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.icthh.xm.ms.otp.web.rest.errors.ExceptionTranslator;
@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -169,7 +168,7 @@ public class OneTimePasswordResourceIntTest {
     @Test
     public void testOtp() throws Exception {
 
-        OneTimePasswordDTO tdo = new OneTimePasswordDTO();
+        OneTimePasswordDto tdo = new OneTimePasswordDto();
         tdo.setReceiver(RECEIVER);
         tdo.setReceiverTypeKey(ReceiverTypeKey.PHONE_NUMBER);
         tdo.setTypeKey(TYPE_KEY);
@@ -186,8 +185,8 @@ public class OneTimePasswordResourceIntTest {
 
         String respStr = result.getResponse().getContentAsString();
         log.info(respStr);
-        OneTimePasswordDTO oneTimePasswordDTO = toDto(respStr, OneTimePasswordDTO.class);
-        OneTimePassword byId = oneTimePasswordRepository.findById(oneTimePasswordDTO.getId()).get();
+        OneTimePasswordDto oneTimePasswordDto = toDto(respStr, OneTimePasswordDto.class);
+        OneTimePassword byId = oneTimePasswordRepository.findById(oneTimePasswordDto.getId()).get();
         long actualTtl = byId.getEndDate().toEpochMilli() - byId.getStartDate().toEpochMilli();
         assertEquals(actualTtl / 1000, TTL);
         assertEquals(byId.getReceiver(), RECEIVER);
@@ -205,7 +204,7 @@ public class OneTimePasswordResourceIntTest {
         OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
 
         //test request
-        OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
+        OneTimePasswordCheckDto dto = new OneTimePasswordCheckDto();
         dto.setId(otp.getId());
         dto.setOtp("123");
         String requestJson = toJson(dto);
@@ -235,7 +234,7 @@ public class OneTimePasswordResourceIntTest {
         OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
 
         //test request
-        OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
+        OneTimePasswordCheckDto dto = new OneTimePasswordCheckDto();
         dto.setId(otp.getId());
         dto.setOtp("1234");
         String requestJson = toJson(dto);
@@ -267,7 +266,7 @@ public class OneTimePasswordResourceIntTest {
         OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(otpToCheck);
 
         //test request
-        OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
+        OneTimePasswordCheckDto dto = new OneTimePasswordCheckDto();
         dto.setId(otp.getId());
         dto.setOtp("123");
         String requestJson = toJson(dto);
@@ -300,7 +299,7 @@ public class OneTimePasswordResourceIntTest {
         OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(otpToCheck);
 
         //test request
-        OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
+        OneTimePasswordCheckDto dto = new OneTimePasswordCheckDto();
         dto.setId(otp.getId());
         dto.setOtp("123");
         String requestJson = toJson(dto);
@@ -333,7 +332,7 @@ public class OneTimePasswordResourceIntTest {
         OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(otpToCheck);
 
         //test request
-        OneTimePasswordCheckDTO dto = new OneTimePasswordCheckDTO();
+        OneTimePasswordCheckDto dto = new OneTimePasswordCheckDto();
         dto.setId(otp.getId());
         dto.setOtp("123");
         String requestJson = toJson(dto);
