@@ -121,14 +121,14 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     }
 
     @Override
-    public void check(OneTimePasswordCheckDTO oneTimePasswordDTO) {
+    public void check(OneTimePasswordCheckDTO oneTimePasswordCheckDTO) {
 
-        OneTimePassword passwordEntity = oneTimePasswordRepository.getOne(oneTimePasswordDTO.getId());
+        OneTimePassword passwordEntity = oneTimePasswordRepository.getOne(oneTimePasswordCheckDTO.getId());
 
         if (passwordEntity.getStateKey() != StateKey.ACTIVE
             || passwordEntity.getEndDate().isBefore(Instant.now())
             || passwordEntity.getRetries() >= otpSpecService.getOtpTypeSpec(passwordEntity.getTypeKey()).getMaxRetries()
-            || !passwordEntity.getPasswordHash().equals(DigestUtils.sha256Hex(oneTimePasswordDTO.getOtp()))) {
+            || !passwordEntity.getPasswordHash().equals(DigestUtils.sha256Hex(oneTimePasswordCheckDTO.getOtp()))) {
 
             //if not - retries+
             int retries = passwordEntity.getRetries();
