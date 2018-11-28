@@ -8,14 +8,23 @@ import com.icthh.xm.ms.otp.service.OtpSpecService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.mifmif.common.regex.Generex;
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Template;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -26,6 +35,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
+    public static final String OTP = "otp";
+    public static final String TEMPLATE_NAME = "templateName";
     private final OtpSpecService otpSpecService;
 
     private final OneTimePasswordRepository oneTimePasswordRepository;
@@ -52,6 +63,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
      */
     @Override
     @Transactional
+    @SneakyThrows
     public OneTimePasswordDTO generate(OneTimePasswordDTO oneTimePasswordDTO) {
         log.debug("Request to generate OneTimePassword : {}", oneTimePasswordDTO);
         OtpSpec.OtpTypeSpec oneType = otpSpecService.getOtpTypeSpec(oneTimePasswordDTO.getTypeKey());
@@ -63,7 +75,15 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         //build domain
         OneTimePassword otp = getOneTimePassword(oneTimePasswordDTO, oneType, randomPasswrd);
 
-        String message = oneType.getMessage().getEn().replaceAll("\\$\\{otp}", randomPasswrd);
+        Map<String, Object> model = new HashMap<>();
+        model.put(OTP, randomPasswrd);
+        Configuration cfg = new Configuration();
+        cfg.setObjectWrapper(new DefaultObjectWrapper());
+        Template t = new Template(TEMPLATE_NAME, new StringReader(oneType.getMessage().getEn()), cfg);
+        Writer out = new StringWriter();
+        t.process(model, out);
+        String message = out.toString();
+
         oneTimePasswordRepository.saveAndFlush(otp);
 
         communicationService.sendOneTimePassword(message, otp.getReceiver(), oneType.getOtpSenderId());
