@@ -11,12 +11,14 @@ import com.mifmif.common.regex.Generex;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -75,6 +77,15 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         //build domain
         OneTimePassword otp = getOneTimePassword(oneTimePasswordDTO, oneType, randomPasswrd);
 
+        String message = renderMessage(oneType, randomPasswrd);
+
+        oneTimePasswordRepository.saveAndFlush(otp);
+
+        communicationService.sendOneTimePassword(message, otp.getReceiver(), oneType.getOtpSenderId());
+        return oneTimePasswordMapper.toDto(otp);
+    }
+
+    private String renderMessage(OtpSpec.OtpTypeSpec oneType, String randomPasswrd) throws IOException, TemplateException {
         Map<String, Object> model = new HashMap<>();
         model.put(OTP, randomPasswrd);
         Configuration cfg = new Configuration();
@@ -82,12 +93,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         Template t = new Template(TEMPLATE_NAME, new StringReader(oneType.getMessage().getEn()), cfg);
         Writer out = new StringWriter();
         t.process(model, out);
-        String message = out.toString();
-
-        oneTimePasswordRepository.saveAndFlush(otp);
-
-        communicationService.sendOneTimePassword(message, otp.getReceiver(), oneType.getOtpSenderId());
-        return oneTimePasswordMapper.toDto(otp);
+        return out.toString();
     }
 
 
