@@ -127,7 +127,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
         if (passwordEntity.getStateKey() != StateKey.ACTIVE
             || passwordEntity.getEndDate().isBefore(Instant.now())
-            || passwordEntity.getRetries() >= otpSpecService.getOneTypeSpec(passwordEntity.getTypeKey()).getMaxRetries()
+            || passwordEntity.getRetries() >= otpSpecService.getOtpTypeSpec(passwordEntity.getTypeKey()).getMaxRetries()
             || !passwordEntity.getPasswordHash().equals(DigestUtils.sha256Hex(oneTimePasswordDTO.getOtp()))) {
 
             //if not - retries+
