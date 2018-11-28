@@ -1,10 +1,10 @@
 package com.icthh.xm.ms.otp.service.impl;
 
+import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
-import com.icthh.xm.ms.otp.service.OneTimePasswordService;
-import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
+import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDTO;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
