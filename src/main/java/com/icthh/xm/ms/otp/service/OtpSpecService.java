@@ -43,18 +43,18 @@ public class OtpSpecService implements RefreshableConfiguration {
 
     public OtpSpec.OtpTypeSpec getOtpTypeSpec(String typeKey) {
         List<OtpSpec.OtpTypeSpec> types = this.getOtpSpec().getTypes();
-        OtpSpec.OtpTypeSpec oneType = null;
+        OtpSpec.OtpTypeSpec otpType = null;
         for (OtpSpec.OtpTypeSpec type : types) {
             if (type.getKey().equals(typeKey)) {
-                oneType = type;
+                otpType = type;
             }
         }
-        if (oneType == null) {
+        if (otpType == null) {
             throw new IllegalArgumentException(
                 String.format("Profile %s not found", typeKey)
             );
         }
-        return oneType;
+        return otpType;
     }
 
     @Override

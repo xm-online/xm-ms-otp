@@ -2,6 +2,7 @@ package com.icthh.xm.ms.otp.service.impl;
 
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
+import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
@@ -68,24 +69,25 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     @SneakyThrows
     public OneTimePasswordDTO generate(OneTimePasswordDTO oneTimePasswordDTO) {
         log.debug("Request to generate OneTimePassword : {}", oneTimePasswordDTO);
-        OtpSpec.OtpTypeSpec oneType = otpSpecService.getOtpTypeSpec(oneTimePasswordDTO.getTypeKey());
+        OtpSpec.OtpTypeSpec otpType = otpSpecService.getOtpTypeSpec(oneTimePasswordDTO.getTypeKey());
 
         //generate otp
-        Generex generex = new Generex(oneType.getPattern());
+        Generex generex = new Generex(otpType.getPattern());
         String randomPasswrd = generex.random();
 
         //build domain
-        OneTimePassword otp = getOneTimePassword(oneTimePasswordDTO, oneType, randomPasswrd);
+        OneTimePassword otp = getOneTimePassword(oneTimePasswordDTO, otpType, randomPasswrd);
 
-        String message = renderMessage(oneType, randomPasswrd);
+        String message = renderMessage(otpType, randomPasswrd);
 
         oneTimePasswordRepository.saveAndFlush(otp);
 
-        communicationService.sendOneTimePassword(message, otp.getReceiver(), oneType.getOtpSenderId());
+        communicationService.sendOneTimePassword(message, otp.getReceiver(), otpType.getOtpSenderId());
         return oneTimePasswordMapper.toDto(otp);
     }
 
-    private String renderMessage(OtpSpec.OtpTypeSpec oneType, String randomPasswrd) throws IOException, TemplateException {
+    private String renderMessage(OtpSpec.OtpTypeSpec oneType,
+                                 String randomPasswrd) throws IOException, TemplateException {
         Map<String, Object> model = new HashMap<>();
         model.put(OTP, randomPasswrd);
         Configuration cfg = new Configuration();
@@ -95,7 +97,6 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         t.process(model, out);
         return out.toString();
     }
-
 
     private OneTimePassword getOneTimePassword(OneTimePasswordDTO oneTimePasswordDTO,
                                                OtpSpec.OtpTypeSpec oneType,
@@ -112,10 +113,10 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
             .typeKey(oneTimePasswordDTO.getTypeKey())
             .receiver(oneTimePasswordDTO.getReceiver())
             .passwordHash(sha256hex)
-            .stateKey("ACTIVE").build();
+            .stateKey(StateKey.ACTIVE)
+            .build();
         return oneTimePassword;
     }
-
 
     /**
      * Get all the oneTimePasswords.
@@ -130,7 +131,6 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
             .map(oneTimePasswordMapper::toDto)
             .collect(Collectors.toCollection(LinkedList::new));
     }
-
 
     /**
      * Get one oneTimePassword by id.

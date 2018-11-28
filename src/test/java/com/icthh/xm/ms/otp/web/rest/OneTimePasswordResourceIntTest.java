@@ -11,6 +11,7 @@ import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.impl.CommunicationService;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
@@ -182,7 +183,7 @@ public class OneTimePasswordResourceIntTest {
         Assert.assertEquals(actualTtl / 1000, TTL);
         Assert.assertEquals(byId.getReceiver(), RECEIVER);
         Assert.assertEquals(byId.getTypeKey(), TYPE_KEY);
-        Assert.assertEquals(byId.getStateKey(), "ACTIVE");
+        Assert.assertEquals(byId.getStateKey(), StateKey.ACTIVE);
         Assert.assertEquals(byId.getRetries(), MAX_RETRIES);
         Assert.assertEquals(byId.getReceiverTypeKey(), ReceiverTypeKey.PHONE_NUMBER);
     }
