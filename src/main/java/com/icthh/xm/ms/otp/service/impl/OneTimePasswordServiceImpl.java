@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.icthh.xm.ms.otp.config.Constants.DEFAULT_FREMARKER_VERSION;
+
 /**
  * Service Implementation for managing OneTimePassword.
  */
@@ -92,8 +94,8 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
                                  String randomPasswrd) throws IOException, TemplateException {
         Map<String, Object> model = new HashMap<>();
         model.put(OTP, randomPasswrd);
-        Configuration cfg = new Configuration();
-        cfg.setObjectWrapper(new DefaultObjectWrapper());
+        Configuration cfg = new Configuration(DEFAULT_FREMARKER_VERSION);
+        cfg.setObjectWrapper(new DefaultObjectWrapper(DEFAULT_FREMARKER_VERSION));
         Template t = new Template(TEMPLATE_NAME, new StringReader(oneType.getMessage().getEn()), cfg);
         Writer out = new StringWriter();
         t.process(model, out);
@@ -123,22 +125,38 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     @Override
     public void check(OneTimePasswordCheckDTO oneTimePasswordCheckDTO) {
 
-        OneTimePassword passwordEntity = oneTimePasswordRepository.getOne(oneTimePasswordCheckDTO.getId());
+        OneTimePassword otp = oneTimePasswordRepository.getOne(oneTimePasswordCheckDTO.getId());
 
-        if (passwordEntity.getStateKey() != StateKey.ACTIVE
-            || passwordEntity.getEndDate().isBefore(Instant.now())
-            || passwordEntity.getRetries() >= otpSpecService.getOtpTypeSpec(passwordEntity.getTypeKey()).getMaxRetries()
-            || !passwordEntity.getPasswordHash().equals(DigestUtils.sha256Hex(oneTimePasswordCheckDTO.getOtp()))) {
+        if (checkOtpState(otp)
+            || checkOtpDate(otp)
+            || checkOtpRetries(otp)
+            || checkOtpPasswd(otp, oneTimePasswordCheckDTO)) {
 
             //if not - retries+
-            int retries = passwordEntity.getRetries();
-            passwordEntity.setRetries(++retries);
-            oneTimePasswordRepository.save(passwordEntity);
+            int retries = otp.getRetries();
+            otp.setRetries(++retries);
+            oneTimePasswordRepository.save(otp);
             throw new OtpInvalidPasswordException();
         } else {
-            passwordEntity.setStateKey(StateKey.VERIFIED);
-            oneTimePasswordRepository.save(passwordEntity);
+            otp.setStateKey(StateKey.VERIFIED);
+            oneTimePasswordRepository.save(otp);
         }
+    }
+
+    private boolean checkOtpState(OneTimePassword otp) {
+        return otp.getStateKey() != StateKey.ACTIVE;
+    }
+
+    private boolean checkOtpDate(OneTimePassword otp) {
+        return otp.getEndDate().isBefore(Instant.now());
+    }
+
+    private boolean checkOtpRetries(OneTimePassword otp) {
+        return otp.getRetries() >= otpSpecService.getOtpTypeSpec(otp.getTypeKey()).getMaxRetries();
+    }
+
+    private boolean checkOtpPasswd(OneTimePassword otp, OneTimePasswordCheckDTO otpForCheck) {
+        return !otp.getPasswordHash().equals(DigestUtils.sha256Hex(otpForCheck.getOtp()));
     }
 
     /**
