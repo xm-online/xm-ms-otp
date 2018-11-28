@@ -2,6 +2,9 @@ package com.icthh.xm.ms.otp.domain;
 
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -23,6 +26,9 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(name = "one_time_password")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OneTimePassword implements Serializable {
 
     private static final long serialVersionUID = 1L;

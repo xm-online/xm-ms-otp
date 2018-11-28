@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum StateKey {
 
     ACTIVE("ACTIVE"),
-    VERIFIED("VERIFIED");
+    VERIFIED("VERIFIED"),
+    NOT_VALID("NOT-VALID"),
+    EXPIRED("EXPIRED");
 
     private final String value;
 
