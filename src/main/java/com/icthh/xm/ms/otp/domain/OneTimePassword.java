@@ -1,10 +1,10 @@
 package com.icthh.xm.ms.otp.domain;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.Objects;
-
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,12 +16,18 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.Objects;
 
 /**
  * A OneTimePassword.
  */
 @Entity
 @Table(name = "one_time_password")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OneTimePassword implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -45,8 +51,9 @@ public class OneTimePassword implements Serializable {
     private String typeKey;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(name = "state_key", nullable = false)
-    private String stateKey;
+    private StateKey stateKey;
 
     @NotNull
     @Column(name = "retries", nullable = false)
@@ -112,16 +119,16 @@ public class OneTimePassword implements Serializable {
         this.typeKey = typeKey;
     }
 
-    public String getStateKey() {
+    public StateKey getStateKey() {
         return stateKey;
     }
 
-    public OneTimePassword stateKey(String stateKey) {
+    public OneTimePassword stateKey(StateKey stateKey) {
         this.stateKey = stateKey;
         return this;
     }
 
-    public void setStateKey(String stateKey) {
+    public void setStateKey(StateKey stateKey) {
         this.stateKey = stateKey;
     }
 

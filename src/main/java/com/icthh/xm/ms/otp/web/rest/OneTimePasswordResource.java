@@ -3,9 +3,8 @@ package com.icthh.xm.ms.otp.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDTO;
-import com.icthh.xm.ms.otp.web.rest.errors.BadRequestAlertException;
-
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
+import com.icthh.xm.ms.otp.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -47,10 +46,10 @@ public class OneTimePasswordResource {
     public ResponseEntity<OneTimePasswordDTO> generateOneTimePassword(
         @Valid @RequestBody OneTimePasswordDTO oneTimePasswordDTO) throws URISyntaxException {
 
-        log.debug("REST request to save OneTimePassword : {}", oneTimePasswordDTO);
+        log.debug("REST request to generate OneTimePassword : {}", oneTimePasswordDTO);
 
-        //OneTimePasswordDTO result = oneTimePasswordService.save(oneTimePasswordDTO);
-        return ResponseEntity.ok(oneTimePasswordDTO);
+        OneTimePasswordDTO result = oneTimePasswordService.generate(oneTimePasswordDTO);
+        return ResponseEntity.ok(result);
     }
 
     /**

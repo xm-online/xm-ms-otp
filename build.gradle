@@ -271,6 +271,8 @@ dependencies {
     compile "org.mapstruct:mapstruct-jdk8:${mapstruct_version}"
     provided "org.projectlombok:lombok:${lombok_version}"
     apt "org.projectlombok:lombok:${lombok_version}"
+    compile "com.github.mifmif:generex:${generex_version}"
+    compile "org.freemarker:freemarker:${free_marker_version}"
     
     compile "com.icthh.xm.commons:xm-commons-security:${xm_commons_version}"
     compile "com.icthh.xm.commons:xm-commons-logging-web:${xm_commons_version}"
