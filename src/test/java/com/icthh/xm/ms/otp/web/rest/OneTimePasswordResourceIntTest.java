@@ -166,13 +166,13 @@ public class OneTimePasswordResourceIntTest {
     }
 
     @Test
-    public void testOtp() throws Exception {
+    public void testOtpGeneration() throws Exception {
 
-        OneTimePasswordDto tdo = new OneTimePasswordDto();
-        tdo.setReceiver(RECEIVER);
-        tdo.setReceiverTypeKey(ReceiverTypeKey.PHONE_NUMBER);
-        tdo.setTypeKey(TYPE_KEY);
-        String requestJson = toJson(tdo);
+        OneTimePasswordDto dto = new OneTimePasswordDto();
+        dto.setReceiver(RECEIVER);
+        dto.setReceiverTypeKey(ReceiverTypeKey.PHONE_NUMBER);
+        dto.setTypeKey(TYPE_KEY);
+        String requestJson = toJson(dto);
 
         MockHttpServletRequestBuilder postContent = post("/api/one-time-password")
             .contentType(APPLICATION_JSON_UTF8)
@@ -355,11 +355,11 @@ public class OneTimePasswordResourceIntTest {
         log.info(result.getResponse().getContentAsString());
     }
 
-    private String toJson(Object tdo) throws JsonProcessingException {
+    private String toJson(Object dto) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
-        return ow.writeValueAsString(tdo);
+        return ow.writeValueAsString(dto);
     }
 
     private <T> T toDto(String response, Class<T> cls) throws IOException {
