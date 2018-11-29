@@ -1,15 +1,14 @@
 package com.icthh.xm.ms.otp.service.mapper;
 
-import com.icthh.xm.ms.otp.domain.*;
-import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
-
-import org.mapstruct.*;
+import com.icthh.xm.ms.otp.domain.OneTimePassword;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
+import org.mapstruct.Mapper;
 
 /**
- * Mapper for the entity OneTimePassword and its DTO OneTimePasswordDTO.
+ * Mapper for the entity OneTimePassword and its DTO OneTimePasswordDto.
  */
 @Mapper(componentModel = "spring", uses = {})
-public interface OneTimePasswordMapper extends EntityMapper<OneTimePasswordDTO, OneTimePassword> {
+public interface OneTimePasswordMapper extends EntityMapper<OneTimePasswordDto, OneTimePassword> {
 
     default OneTimePassword fromId(Long id) {
         if (id == null) {

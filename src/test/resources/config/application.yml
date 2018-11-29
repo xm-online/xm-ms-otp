@@ -57,7 +57,9 @@ spring:
         serialization:
             indent_output: true
         default-property-inclusion: non_null
-
+    h2:
+        console:
+            enabled: false
 server:
     port: 10344
     address: localhost

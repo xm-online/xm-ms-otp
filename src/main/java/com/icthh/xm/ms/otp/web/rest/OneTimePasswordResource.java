@@ -2,8 +2,8 @@ package com.icthh.xm.ms.otp.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
-import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDTO;
-import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,40 +36,40 @@ public class OneTimePasswordResource {
     /**
      * POST  /one-time-password : Create a new oneTimePassword.
      *
-     * @param oneTimePasswordDTO the oneTimePasswordDTO to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new oneTimePasswordDTO,
+     * @param oneTimePasswordDto the oneTimePasswordDto to create
+     * @return the ResponseEntity with status 201 (Created) and with body the new oneTimePasswordDto,
      * or with status 400 (Bad Request) if the oneTimePassword has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/one-time-password")
     @Timed
-    public ResponseEntity<OneTimePasswordDTO> generateOneTimePassword(
-        @Valid @RequestBody OneTimePasswordDTO oneTimePasswordDTO) throws URISyntaxException {
+    public ResponseEntity<OneTimePasswordDto> generateOneTimePassword(
+        @Valid @RequestBody OneTimePasswordDto oneTimePasswordDto) throws URISyntaxException {
 
-        log.debug("REST request to generate OneTimePassword : {}", oneTimePasswordDTO);
+        log.debug("REST request to generate OneTimePassword : {}", oneTimePasswordDto);
 
-        OneTimePasswordDTO result = oneTimePasswordService.generate(oneTimePasswordDTO);
+        OneTimePasswordDto result = oneTimePasswordService.generate(oneTimePasswordDto);
         return ResponseEntity.ok(result);
     }
 
     /**
      * POST  /one-time-password/check : Validate an existing oneTimePassword.
      *
-     * @param oneTimePasswordCheckDTO the otp for checking
+     * @param oneTimePasswordCheckDto the otp for checking
      * @return the ResponseEntity with status 200 (OK)
-     * or with status 400 (Bad Request) if the oneTimePasswordCheckDTO is not valid,
-     * or with status 500 (Internal Server Error) if the oneTimePasswordCheckDTO couldn't be checked
+     * or with status 400 (Bad Request) if the oneTimePasswordCheckDto is not valid,
+     * or with status 500 (Internal Server Error) if the oneTimePasswordCheckDto couldn't be checked
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/one-time-password/check")
     @Timed
-    public ResponseEntity<OneTimePasswordCheckDTO> checkOneTimePassword(
-        @Valid @RequestBody OneTimePasswordCheckDTO oneTimePasswordCheckDTO) throws URISyntaxException {
-        log.debug("REST request to update OneTimePassword : {}", oneTimePasswordCheckDTO);
-        if (oneTimePasswordCheckDTO.getId() == null) {
+    public ResponseEntity<OneTimePasswordCheckDto> checkOneTimePassword(
+        @Valid @RequestBody OneTimePasswordCheckDto oneTimePasswordCheckDto) throws URISyntaxException {
+        log.debug("REST request to update OneTimePassword : {}", oneTimePasswordCheckDto);
+        if (oneTimePasswordCheckDto.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-
-        return ResponseEntity.ok(oneTimePasswordCheckDTO);
+        oneTimePasswordService.check(oneTimePasswordCheckDto);
+        return ResponseEntity.ok(oneTimePasswordCheckDto);
     }
 }

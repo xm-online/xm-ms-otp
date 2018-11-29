@@ -6,11 +6,13 @@ import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
-import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDTO;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.mifmif.common.regex.Generex;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
+import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.SneakyThrows;
@@ -30,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.icthh.xm.ms.otp.config.Constants.DEFAULT_FREMARKER_VERSION;
 
 /**
  * Service Implementation for managing OneTimePassword.
@@ -61,22 +65,22 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     /**
      * Save a oneTimePassword.
      *
-     * @param oneTimePasswordDTO the entity to generate
+     * @param oneTimePasswordDto the entity to generate
      * @return the persisted entity
      */
     @Override
     @Transactional
     @SneakyThrows
-    public OneTimePasswordDTO generate(OneTimePasswordDTO oneTimePasswordDTO) {
-        log.debug("Request to generate OneTimePassword : {}", oneTimePasswordDTO);
-        OtpSpec.OtpTypeSpec otpType = otpSpecService.getOtpTypeSpec(oneTimePasswordDTO.getTypeKey());
+    public OneTimePasswordDto generate(OneTimePasswordDto oneTimePasswordDto) {
+        log.debug("Request to generate OneTimePassword : {}", oneTimePasswordDto);
+        OtpSpec.OtpTypeSpec otpType = otpSpecService.getOtpTypeSpec(oneTimePasswordDto.getTypeKey());
 
         //generate otp
         Generex generex = new Generex(otpType.getPattern());
         String randomPasswrd = generex.random();
 
         //build domain
-        OneTimePassword otp = getOneTimePassword(oneTimePasswordDTO, otpType, randomPasswrd);
+        OneTimePassword otp = getOneTimePassword(oneTimePasswordDto, otpType, randomPasswrd);
 
         String message = renderMessage(otpType, randomPasswrd);
 
@@ -90,15 +94,15 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
                                  String randomPasswrd) throws IOException, TemplateException {
         Map<String, Object> model = new HashMap<>();
         model.put(OTP, randomPasswrd);
-        Configuration cfg = new Configuration();
-        cfg.setObjectWrapper(new DefaultObjectWrapper());
+        Configuration cfg = new Configuration(DEFAULT_FREMARKER_VERSION);
+        cfg.setObjectWrapper(new DefaultObjectWrapper(DEFAULT_FREMARKER_VERSION));
         Template t = new Template(TEMPLATE_NAME, new StringReader(oneType.getMessage().getEn()), cfg);
         Writer out = new StringWriter();
         t.process(model, out);
         return out.toString();
     }
 
-    private OneTimePassword getOneTimePassword(OneTimePasswordDTO oneTimePasswordDTO,
+    private OneTimePassword getOneTimePassword(OneTimePasswordDto oneTimePasswordDto,
                                                OtpSpec.OtpTypeSpec oneType,
                                                String randomPasswrd) {
         String sha256hex = DigestUtils.sha256Hex(randomPasswrd);
@@ -110,12 +114,49 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
             .receiverTypeKey(oneType.getReceiverTypeKey())
             .receiverTypeKey(oneType.getReceiverTypeKey())
             .retries(oneType.getMaxRetries())
-            .typeKey(oneTimePasswordDTO.getTypeKey())
-            .receiver(oneTimePasswordDTO.getReceiver())
+            .typeKey(oneTimePasswordDto.getTypeKey())
+            .receiver(oneTimePasswordDto.getReceiver())
             .passwordHash(sha256hex)
             .stateKey(StateKey.ACTIVE)
             .build();
         return oneTimePassword;
+    }
+
+    @Override
+    public void check(OneTimePasswordCheckDto oneTimePasswordCheckDto) {
+
+        OneTimePassword otp = oneTimePasswordRepository.getOne(oneTimePasswordCheckDto.getId());
+
+        if (checkOtpState(otp)
+            || checkOtpDate(otp)
+            || checkOtpRetries(otp)
+            || checkOtpPasswd(otp, oneTimePasswordCheckDto)) {
+
+            //if not - retries+
+            int retries = otp.getRetries();
+            otp.setRetries(++retries);
+            oneTimePasswordRepository.save(otp);
+            throw new OtpInvalidPasswordException();
+        } else {
+            otp.setStateKey(StateKey.VERIFIED);
+            oneTimePasswordRepository.save(otp);
+        }
+    }
+
+    private boolean checkOtpState(OneTimePassword otp) {
+        return otp.getStateKey() != StateKey.ACTIVE;
+    }
+
+    private boolean checkOtpDate(OneTimePassword otp) {
+        return otp.getEndDate().isBefore(Instant.now());
+    }
+
+    private boolean checkOtpRetries(OneTimePassword otp) {
+        return otp.getRetries() >= otpSpecService.getOtpTypeSpec(otp.getTypeKey()).getMaxRetries();
+    }
+
+    private boolean checkOtpPasswd(OneTimePassword otp, OneTimePasswordCheckDto otpForCheck) {
+        return !otp.getPasswordHash().equals(DigestUtils.sha256Hex(otpForCheck.getOtp()));
     }
 
     /**
@@ -125,7 +166,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<OneTimePasswordDTO> findAll() {
+    public List<OneTimePasswordDto> findAll() {
         log.debug("Request to get all OneTimePasswords");
         return oneTimePasswordRepository.findAll().stream()
             .map(oneTimePasswordMapper::toDto)
@@ -140,7 +181,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Optional<OneTimePasswordDTO> findOne(Long id) {
+    public Optional<OneTimePasswordDto> findOne(Long id) {
         log.debug("Request to get OneTimePassword : {}", id);
         return oneTimePasswordRepository.findById(id)
             .map(oneTimePasswordMapper::toDto);
