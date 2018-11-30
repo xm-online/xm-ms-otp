@@ -1,8 +1,11 @@
 package com.icthh.xm.ms.otp.service.impl;
 
+import com.icthh.xm.commons.lep.LogicExtensionPoint;
+import com.icthh.xm.commons.lep.spring.LepService;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
+import com.icthh.xm.ms.otp.lep.keyresolver.OtpTypeKeyResolver;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
@@ -40,6 +43,7 @@ import static com.icthh.xm.ms.otp.config.Constants.DEFAULT_FREMARKER_VERSION;
  */
 @Service
 @Slf4j
+@LepService(group = "service", name = "default")
 public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
     public static final String OTP = "otp";
@@ -71,6 +75,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     @Override
     @Transactional
     @SneakyThrows
+    @LogicExtensionPoint(value = "Generate", resolver = OtpTypeKeyResolver.class)
     public OneTimePasswordDto generate(OneTimePasswordDto oneTimePasswordDto) {
         log.debug("Request to generate OneTimePassword : {}", oneTimePasswordDto);
         OtpSpec.OtpTypeSpec otpType = otpSpecService.getOtpTypeSpec(oneTimePasswordDto.getTypeKey());
