@@ -125,7 +125,8 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     @Override
     public void check(OneTimePasswordCheckDto oneTimePasswordCheckDto) {
 
-        OneTimePassword otp = oneTimePasswordRepository.getOne(oneTimePasswordCheckDto.getId());
+        OneTimePassword otp = oneTimePasswordRepository.findById(oneTimePasswordCheckDto.getId())
+            .orElseThrow(OtpInvalidPasswordException::new);
 
         if (checkOtpState(otp)
             || checkOtpDate(otp)
@@ -135,11 +136,11 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
             //if not - retries+
             int retries = otp.getRetries();
             otp.setRetries(++retries);
-            oneTimePasswordRepository.save(otp);
+            oneTimePasswordRepository.saveAndFlush(otp);
             throw new OtpInvalidPasswordException();
         } else {
             otp.setStateKey(StateKey.VERIFIED);
-            oneTimePasswordRepository.save(otp);
+            oneTimePasswordRepository.saveAndFlush(otp);
         }
     }
 
