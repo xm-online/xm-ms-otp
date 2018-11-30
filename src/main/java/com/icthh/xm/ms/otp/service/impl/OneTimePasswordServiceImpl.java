@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -113,7 +114,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
             .endDate(endDate)
             .receiverTypeKey(oneType.getReceiverTypeKey())
             .receiverTypeKey(oneType.getReceiverTypeKey())
-            .retries(oneType.getMaxRetries())
+            .retries(BigInteger.ZERO.intValue())
             .typeKey(oneTimePasswordDto.getTypeKey())
             .receiver(oneTimePasswordDto.getReceiver())
             .passwordHash(sha256hex)
