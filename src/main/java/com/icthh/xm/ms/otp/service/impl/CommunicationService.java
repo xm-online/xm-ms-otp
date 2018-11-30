@@ -102,7 +102,7 @@ public class CommunicationService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         TenantConfig tenantConfig = otpSpecService.getTenantConfig();
         if (tenantConfig == null) {
-            throw new IllegalStateException("Can't send message, because tenant config is null")
+            throw new IllegalStateException("Can't send message, because tenant config is null");
         }
         if (tenantConfig.getCommunication() == null) {
             throw new IllegalStateException("Cant send message, because communication is null");
