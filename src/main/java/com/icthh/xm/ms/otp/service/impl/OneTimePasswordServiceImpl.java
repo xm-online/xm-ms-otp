@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -118,7 +119,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
             .endDate(endDate)
             .receiverTypeKey(oneType.getReceiverTypeKey())
             .receiverTypeKey(oneType.getReceiverTypeKey())
-            .retries(oneType.getMaxRetries())
+            .retries(BigInteger.ZERO.intValue())
             .typeKey(oneTimePasswordDto.getTypeKey())
             .receiver(oneTimePasswordDto.getReceiver())
             .passwordHash(sha256hex)
@@ -130,7 +131,8 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     @Override
     public void check(OneTimePasswordCheckDto oneTimePasswordCheckDto) {
 
-        OneTimePassword otp = oneTimePasswordRepository.getOne(oneTimePasswordCheckDto.getId());
+        OneTimePassword otp = oneTimePasswordRepository.findById(oneTimePasswordCheckDto.getId())
+            .orElseThrow(OtpInvalidPasswordException::new);
 
         if (checkOtpState(otp)
             || checkOtpDate(otp)
@@ -140,11 +142,11 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
             //if not - retries+
             int retries = otp.getRetries();
             otp.setRetries(++retries);
-            oneTimePasswordRepository.save(otp);
+            oneTimePasswordRepository.saveAndFlush(otp);
             throw new OtpInvalidPasswordException();
         } else {
             otp.setStateKey(StateKey.VERIFIED);
-            oneTimePasswordRepository.save(otp);
+            oneTimePasswordRepository.saveAndFlush(otp);
         }
     }
 
