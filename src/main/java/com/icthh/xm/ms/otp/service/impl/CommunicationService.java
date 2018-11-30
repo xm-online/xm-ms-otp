@@ -4,6 +4,7 @@ import com.icthh.xm.commons.tenant.TenantContextHolder;
 import com.icthh.xm.ms.otp.client.domain.CommunicationMessage;
 import com.icthh.xm.ms.otp.client.domain.Receiver;
 import com.icthh.xm.ms.otp.client.domain.Sender;
+import com.icthh.xm.ms.otp.domain.TenantConfig;
 import com.icthh.xm.ms.otp.domain.UaaConfig;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
 import lombok.extern.slf4j.Slf4j;
@@ -99,7 +100,14 @@ public class CommunicationService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, this.getSystemToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
-        String url = otpSpecService.getTenantConfig().getCommunication().getUrl()+ "/communicationMessage/send";
+        TenantConfig tenantConfig = otpSpecService.getTenantConfig();
+        if (tenantConfig == null) {
+            throw new IllegalStateException("Can't send message, because tenant config is null")
+        }
+        if (tenantConfig.getCommunication() == null) {
+            throw new IllegalStateException("Cant send message, because communication is null");
+        }
+        String url = tenantConfig.getCommunication().getUrl()+ "/communicationMessage/send";
         CommunicationMessage body = new CommunicationMessage();
         body.setContent(message)
             .setType(SMS)

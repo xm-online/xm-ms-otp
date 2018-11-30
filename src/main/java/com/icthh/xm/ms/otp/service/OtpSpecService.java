@@ -9,11 +9,13 @@ import com.icthh.xm.ms.otp.domain.TenantConfig;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class OtpSpecService implements RefreshableConfiguration {
 
@@ -32,8 +34,10 @@ public class OtpSpecService implements RefreshableConfiguration {
     public void onRefresh(String updatedKey, String config) {
         try {
             if (appProps.getSpecPath().equals(updatedKey)) {
+                log.info("Setting otp spec");
                 this.otpSpec = mapper.readValue(config, OtpSpec.class);
             } else if (appProps.getTenantPath().equals(updatedKey)) {
+                log.info("Setting tenant config");
                 this.tenantConfig = mapper.readValue(config, TenantConfig.class);
             }
         } catch (Exception e) {
