@@ -22,6 +22,7 @@ import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.icthh.xm.ms.otp.web.rest.errors.ExceptionTranslator;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -192,7 +193,7 @@ public class OneTimePasswordResourceIntTest {
         assertEquals(byId.getReceiver(), RECEIVER);
         assertEquals(byId.getTypeKey(), TYPE_KEY);
         assertEquals(byId.getStateKey(), StateKey.ACTIVE);
-        assertEquals(byId.getRetries(), MAX_RETRIES);
+        assertEquals(byId.getRetries(), BigInteger.ZERO);
         assertEquals(byId.getReceiverTypeKey(), ReceiverTypeKey.PHONE_NUMBER);
     }
 
