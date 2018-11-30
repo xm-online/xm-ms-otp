@@ -193,7 +193,7 @@ public class OneTimePasswordResourceIntTest {
         assertEquals(byId.getReceiver(), RECEIVER);
         assertEquals(byId.getTypeKey(), TYPE_KEY);
         assertEquals(byId.getStateKey(), StateKey.ACTIVE);
-        assertEquals(byId.getRetries(), BigInteger.ZERO);
+        assertEquals(byId.getRetries(), new Integer(BigInteger.ZERO.intValue()));
         assertEquals(byId.getReceiverTypeKey(), ReceiverTypeKey.PHONE_NUMBER);
     }
 
