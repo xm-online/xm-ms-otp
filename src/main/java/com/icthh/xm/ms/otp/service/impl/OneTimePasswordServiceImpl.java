@@ -21,6 +21,8 @@ import freemarker.template.TemplateException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -103,7 +105,10 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         model.put(OTP, randomPasswrd);
         Configuration cfg = new Configuration(DEFAULT_FREMARKER_VERSION);
         cfg.setObjectWrapper(new DefaultObjectWrapper(DEFAULT_FREMARKER_VERSION));
-        if (langKey == null) {
+        if (MapUtils.isEmpty(oneType.getMessage())) {
+            throw new IllegalStateException("Missing configuration");
+        }
+        if (langKey == null || StringUtils.isEmpty(oneType.getMessage().get(langKey))) {
             langKey = oneType.getMessage().firstKey();
         }
         String messageText = oneType.getMessage().get(langKey);

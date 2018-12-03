@@ -42,6 +42,12 @@ public class OneTimePasswordServiceImplTest {
     }
 
     @Test
+    public void testRenderMissingLang() throws IOException, TemplateException {
+        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", "ZZZ");
+        assertEquals("Your otp password", result);
+    }
+
+    @Test
     public void testRenderMessageUa() throws IOException, TemplateException {
         String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", "UA");
         assertEquals("Це ваш otp password", result);
@@ -53,6 +59,14 @@ public class OneTimePasswordServiceImplTest {
         assertEquals("Это ваш otp password", result);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testRenderMessageEmptyMessage() throws IOException, TemplateException {
+        OtpSpec.OtpTypeSpec otpTypeSpec = generateOtpTypeSpec();
+        otpTypeSpec.setMessage(null);
+
+        oneTimePasswordService.renderMessage(otpTypeSpec, "password", null);
+    }
+
     private OtpSpec.OtpTypeSpec generateOtpTypeSpec() {
 
         SortedMap<String, String> langMap = new TreeMap<>();
@@ -60,14 +74,11 @@ public class OneTimePasswordServiceImplTest {
         langMap.put("UA", "Це ваш otp ${otp}");
         langMap.put("RU", "Это ваш otp ${otp}");
 
-        OtpSpec.OtpMessageSpec message = new OtpSpec.OtpMessageSpec();
-        message.setLangKeysMap(langMap);
-
         return new OtpSpec.OtpTypeSpec(
             TYPE_KEY,
             "[ab]{4,6}c",
             ReceiverTypeKey.PHONE_NUMBER,
-            message,
+            langMap,
             LENGTH,
             MAX_RETRIES,
             TTL,

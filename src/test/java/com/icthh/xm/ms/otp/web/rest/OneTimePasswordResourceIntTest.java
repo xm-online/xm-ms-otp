@@ -146,18 +146,17 @@ public class OneTimePasswordResourceIntTest {
         OtpSpecService otpSpecService = new OtpSpecService(applicationProperties);
         OtpSpec otpSpec = new OtpSpec();
         otpSpec.setTypes(new ArrayList<>());
-        OtpSpec.OtpMessageSpec message = new OtpSpec.OtpMessageSpec();
 
         SortedMap<String, String> langMap = new TreeMap<>();
         langMap.put("EN", "Your otp ${otp}");
         langMap.put("UA", "Ваш otp ${otp}");
         langMap.put("RU", "Ваш otp ${otp}");
-        message.setLangKeysMap(langMap);
+
         OtpSpec.OtpTypeSpec type = new OtpSpec.OtpTypeSpec(
             TYPE_KEY,
             "[ab]{4,6}c",
             ReceiverTypeKey.PHONE_NUMBER,
-            message,
+            langMap,
             LENGTH,
             MAX_RETRIES,
             TTL,
