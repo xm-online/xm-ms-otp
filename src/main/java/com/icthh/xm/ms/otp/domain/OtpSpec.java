@@ -19,15 +19,10 @@ public class OtpSpec {
         private String key;
         private String pattern;
         private ReceiverTypeKey receiverTypeKey;
-        private OtpMessageSpec message;
+        private SortedMap<String, String> message;
         private Integer length;
         private Integer maxRetries;
         private Integer ttl;
         private String otpSenderId;
-    }
-
-    @Data
-    public static class OtpMessageSpec {
-        private SortedMap<String, String> langKeysMap;
     }
 }

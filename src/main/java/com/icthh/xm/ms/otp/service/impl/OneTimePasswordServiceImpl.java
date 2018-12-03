@@ -104,9 +104,9 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         Configuration cfg = new Configuration(DEFAULT_FREMARKER_VERSION);
         cfg.setObjectWrapper(new DefaultObjectWrapper(DEFAULT_FREMARKER_VERSION));
         if (langKey == null) {
-            langKey = oneType.getMessage().getLangKeysMap().firstKey();
+            langKey = oneType.getMessage().firstKey();
         }
-        String messageText = oneType.getMessage().getLangKeysMap().get(langKey);
+        String messageText = oneType.getMessage().get(langKey);
         Template t = new Template(TEMPLATE_NAME, new StringReader(messageText), cfg);
         Writer out = new StringWriter();
         t.process(model, out);
