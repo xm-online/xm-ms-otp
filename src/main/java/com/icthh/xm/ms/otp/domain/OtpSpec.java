@@ -1,6 +1,5 @@
 package com.icthh.xm.ms.otp.domain;
 
-import com.icthh.xm.ms.otp.domain.enumeration.LangKey;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,6 +28,6 @@ public class OtpSpec {
 
     @Data
     public static class OtpMessageSpec {
-        private SortedMap<LangKey, String> langKeysMap;
+        private SortedMap<String, String> langKeysMap;
     }
 }

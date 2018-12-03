@@ -4,7 +4,6 @@ import com.icthh.xm.commons.lep.LogicExtensionPoint;
 import com.icthh.xm.commons.lep.spring.LepService;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
-import com.icthh.xm.ms.otp.domain.enumeration.LangKey;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.lep.keyresolver.OtpTypeKeyResolver;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
@@ -99,7 +98,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
     protected String renderMessage(OtpSpec.OtpTypeSpec oneType,
                                  String randomPasswrd,
-                                 LangKey langKey) throws IOException, TemplateException {
+                                 String langKey) throws IOException, TemplateException {
         Map<String, Object> model = new HashMap<>();
         model.put(OTP, randomPasswrd);
         Configuration cfg = new Configuration(DEFAULT_FREMARKER_VERSION);

@@ -3,7 +3,6 @@ package com.icthh.xm.ms.otp.service.dto;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.icthh.xm.ms.otp.domain.enumeration.LangKey;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 
 import javax.validation.constraints.NotNull;
@@ -24,7 +23,7 @@ public class OneTimePasswordDto implements Serializable {
     @NotNull
     private String typeKey;
 
-    private LangKey langKey;
+    private String langKey;
 
     public Long getId() {
         return id;
@@ -58,11 +57,11 @@ public class OneTimePasswordDto implements Serializable {
         this.typeKey = typeKey;
     }
 
-    public LangKey getLangKey() {
+    public String getLangKey() {
         return langKey;
     }
 
-    public void setLangKey(LangKey langKey) {
+    public void setLangKey(String langKey) {
         this.langKey = langKey;
     }
 

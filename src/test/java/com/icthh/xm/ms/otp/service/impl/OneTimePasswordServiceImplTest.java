@@ -3,7 +3,6 @@ package com.icthh.xm.ms.otp.service.impl;
 import static org.junit.Assert.assertEquals;
 
 import com.icthh.xm.ms.otp.domain.OtpSpec;
-import com.icthh.xm.ms.otp.domain.enumeration.LangKey;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import freemarker.template.TemplateException;
 
@@ -32,7 +31,7 @@ public class OneTimePasswordServiceImplTest {
 
     @Test
     public void testRenderMessage() throws IOException, TemplateException {
-        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", LangKey.EN);
+        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", "EN");
         assertEquals("Your otp password", result);
     }
 
@@ -44,22 +43,22 @@ public class OneTimePasswordServiceImplTest {
 
     @Test
     public void testRenderMessageUa() throws IOException, TemplateException {
-        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", LangKey.UA);
+        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", "UA");
         assertEquals("Це ваш otp password", result);
     }
 
     @Test
     public void testRenderMessageRu() throws IOException, TemplateException {
-        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", LangKey.RU);
+        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", "RU");
         assertEquals("Это ваш otp password", result);
     }
 
     private OtpSpec.OtpTypeSpec generateOtpTypeSpec() {
 
-        SortedMap<LangKey, String> langMap = new TreeMap<>();
-        langMap.put(LangKey.EN, "Your otp ${otp}");
-        langMap.put(LangKey.UA, "Це ваш otp ${otp}");
-        langMap.put(LangKey.RU, "Это ваш otp ${otp}");
+        SortedMap<String, String> langMap = new TreeMap<>();
+        langMap.put("EN", "Your otp ${otp}");
+        langMap.put("UA", "Це ваш otp ${otp}");
+        langMap.put("RU", "Это ваш otp ${otp}");
 
         OtpSpec.OtpMessageSpec message = new OtpSpec.OtpMessageSpec();
         message.setLangKeysMap(langMap);
