@@ -10,6 +10,7 @@ import com.icthh.xm.ms.otp.config.SecurityBeanOverrideConfiguration;
 import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
+import com.icthh.xm.ms.otp.domain.enumeration.LangKey;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
@@ -26,6 +27,8 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -145,7 +148,12 @@ public class OneTimePasswordResourceIntTest {
         OtpSpec otpSpec = new OtpSpec();
         otpSpec.setTypes(new ArrayList<>());
         OtpSpec.OtpMessageSpec message = new OtpSpec.OtpMessageSpec();
-        message.setEn("Your otp ${otp}");
+
+        SortedMap<LangKey, String> langMap = new TreeMap<>();
+        langMap.put(LangKey.EN, "Your otp ${otp}");
+        langMap.put(LangKey.UA, "Ваш otp ${otp}");
+        langMap.put(LangKey.RU, "Ваш otp ${otp}");
+        message.setLangKeysMap(langMap);
         OtpSpec.OtpTypeSpec type = new OtpSpec.OtpTypeSpec(
             TYPE_KEY,
             "[ab]{4,6}c",
@@ -173,6 +181,7 @@ public class OneTimePasswordResourceIntTest {
         dto.setReceiver(RECEIVER);
         dto.setReceiverTypeKey(ReceiverTypeKey.PHONE_NUMBER);
         dto.setTypeKey(TYPE_KEY);
+        dto.setLangKey(LangKey.EN);
         String requestJson = toJson(dto);
 
         MockHttpServletRequestBuilder postContent = post("/api/one-time-password")

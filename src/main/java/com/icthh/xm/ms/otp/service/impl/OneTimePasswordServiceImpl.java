@@ -4,6 +4,7 @@ import com.icthh.xm.commons.lep.LogicExtensionPoint;
 import com.icthh.xm.commons.lep.spring.LepService;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
+import com.icthh.xm.ms.otp.domain.enumeration.LangKey;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.lep.keyresolver.OtpTypeKeyResolver;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
@@ -88,7 +89,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         //build domain
         OneTimePassword otp = getOneTimePassword(oneTimePasswordDto, otpType, randomPasswrd);
 
-        String message = renderMessage(otpType, randomPasswrd);
+        String message = renderMessage(otpType, randomPasswrd, oneTimePasswordDto.getLangKey());
 
         oneTimePasswordRepository.saveAndFlush(otp);
 
@@ -96,13 +97,18 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         return oneTimePasswordMapper.toDto(otp);
     }
 
-    private String renderMessage(OtpSpec.OtpTypeSpec oneType,
-                                 String randomPasswrd) throws IOException, TemplateException {
+    protected String renderMessage(OtpSpec.OtpTypeSpec oneType,
+                                 String randomPasswrd,
+                                 LangKey langKey) throws IOException, TemplateException {
         Map<String, Object> model = new HashMap<>();
         model.put(OTP, randomPasswrd);
         Configuration cfg = new Configuration(DEFAULT_FREMARKER_VERSION);
         cfg.setObjectWrapper(new DefaultObjectWrapper(DEFAULT_FREMARKER_VERSION));
-        Template t = new Template(TEMPLATE_NAME, new StringReader(oneType.getMessage().getEn()), cfg);
+        if (langKey == null) {
+            langKey = oneType.getMessage().getLangKeysMap().firstKey();
+        }
+        String messageText = oneType.getMessage().getLangKeysMap().get(langKey);
+        Template t = new Template(TEMPLATE_NAME, new StringReader(messageText), cfg);
         Writer out = new StringWriter();
         t.process(model, out);
         return out.toString();
