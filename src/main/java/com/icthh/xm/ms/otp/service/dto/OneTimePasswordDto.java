@@ -23,6 +23,8 @@ public class OneTimePasswordDto implements Serializable {
     @NotNull
     private String typeKey;
 
+    private String langKey;
+
     public Long getId() {
         return id;
     }
@@ -55,6 +57,14 @@ public class OneTimePasswordDto implements Serializable {
         this.typeKey = typeKey;
     }
 
+    public String getLangKey() {
+        return langKey;
+    }
+
+    public void setLangKey(String langKey) {
+        this.langKey = langKey;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -83,6 +93,7 @@ public class OneTimePasswordDto implements Serializable {
             ", receiver='" + getReceiver() + "'" +
             ", receiverTypeKey='" + getReceiverTypeKey() + "'" +
             ", typeKey='" + getTypeKey() + "'" +
+            ", langKey='" + getLangKey() + "'" +
             "}";
     }
 }

@@ -26,6 +26,8 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -144,13 +146,17 @@ public class OneTimePasswordResourceIntTest {
         OtpSpecService otpSpecService = new OtpSpecService(applicationProperties);
         OtpSpec otpSpec = new OtpSpec();
         otpSpec.setTypes(new ArrayList<>());
-        OtpSpec.OtpMessageSpec message = new OtpSpec.OtpMessageSpec();
-        message.setEn("Your otp ${otp}");
+
+        SortedMap<String, String> langMap = new TreeMap<>();
+        langMap.put("EN", "Your otp ${otp}");
+        langMap.put("UA", "Ваш otp ${otp}");
+        langMap.put("RU", "Ваш otp ${otp}");
+
         OtpSpec.OtpTypeSpec type = new OtpSpec.OtpTypeSpec(
             TYPE_KEY,
             "[ab]{4,6}c",
             ReceiverTypeKey.PHONE_NUMBER,
-            message,
+            langMap,
             LENGTH,
             MAX_RETRIES,
             TTL,
@@ -173,6 +179,7 @@ public class OneTimePasswordResourceIntTest {
         dto.setReceiver(RECEIVER);
         dto.setReceiverTypeKey(ReceiverTypeKey.PHONE_NUMBER);
         dto.setTypeKey(TYPE_KEY);
+        dto.setLangKey("EN");
         String requestJson = toJson(dto);
 
         MockHttpServletRequestBuilder postContent = post("/api/one-time-password")

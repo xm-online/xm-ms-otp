@@ -21,6 +21,8 @@ import freemarker.template.TemplateException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,7 +90,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         //build domain
         OneTimePassword otp = getOneTimePassword(oneTimePasswordDto, otpType, randomPasswrd);
 
-        String message = renderMessage(otpType, randomPasswrd);
+        String message = renderMessage(otpType, randomPasswrd, oneTimePasswordDto.getLangKey());
 
         oneTimePasswordRepository.saveAndFlush(otp);
 
@@ -96,13 +98,21 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         return oneTimePasswordMapper.toDto(otp);
     }
 
-    private String renderMessage(OtpSpec.OtpTypeSpec oneType,
-                                 String randomPasswrd) throws IOException, TemplateException {
+    protected String renderMessage(OtpSpec.OtpTypeSpec oneType,
+                                 String randomPasswrd,
+                                 String langKey) throws IOException, TemplateException {
         Map<String, Object> model = new HashMap<>();
         model.put(OTP, randomPasswrd);
         Configuration cfg = new Configuration(DEFAULT_FREMARKER_VERSION);
         cfg.setObjectWrapper(new DefaultObjectWrapper(DEFAULT_FREMARKER_VERSION));
-        Template t = new Template(TEMPLATE_NAME, new StringReader(oneType.getMessage().getEn()), cfg);
+        if (MapUtils.isEmpty(oneType.getMessage())) {
+            throw new IllegalStateException("Missing configuration");
+        }
+        if (langKey == null || StringUtils.isEmpty(oneType.getMessage().get(langKey))) {
+            langKey = oneType.getMessage().firstKey();
+        }
+        String messageText = oneType.getMessage().get(langKey);
+        Template t = new Template(TEMPLATE_NAME, new StringReader(messageText), cfg);
         Writer out = new StringWriter();
         t.process(model, out);
         return out.toString();

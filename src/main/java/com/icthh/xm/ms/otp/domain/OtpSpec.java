@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.SortedMap;
 
 @Data
 public class OtpSpec {
@@ -18,15 +19,10 @@ public class OtpSpec {
         private String key;
         private String pattern;
         private ReceiverTypeKey receiverTypeKey;
-        private OtpMessageSpec message;
+        private SortedMap<String, String> message;
         private Integer length;
         private Integer maxRetries;
         private Integer ttl;
         private String otpSenderId;
-    }
-
-    @Data
-    public static class OtpMessageSpec {
-        private String en;
     }
 }
