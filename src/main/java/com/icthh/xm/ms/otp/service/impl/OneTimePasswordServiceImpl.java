@@ -1,5 +1,7 @@
 package com.icthh.xm.ms.otp.service.impl;
 
+import static com.icthh.xm.ms.otp.config.Constants.DEFAULT_FREMARKER_VERSION;
+
 import com.icthh.xm.commons.lep.LogicExtensionPoint;
 import com.icthh.xm.commons.lep.spring.LepService;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
@@ -7,15 +9,16 @@ import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.lep.keyresolver.OtpTypeKeyResolver;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
+import com.icthh.xm.ms.otp.service.CommunicationService;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
+import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
 import com.mifmif.common.regex.Generex;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
-import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.SneakyThrows;
@@ -39,8 +42,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.icthh.xm.ms.otp.config.Constants.DEFAULT_FREMARKER_VERSION;
-
 /**
  * Service Implementation for managing OneTimePassword.
  */
@@ -49,8 +50,8 @@ import static com.icthh.xm.ms.otp.config.Constants.DEFAULT_FREMARKER_VERSION;
 @LepService(group = "service", name = "default")
 public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
-    public static final String OTP = "otp";
-    public static final String TEMPLATE_NAME = "templateName";
+    private static final String OTP = "otp";
+    private static final String TEMPLATE_NAME = "templateName";
     private final OtpSpecService otpSpecService;
 
     private final OneTimePasswordRepository oneTimePasswordRepository;
@@ -124,7 +125,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         String sha256hex = DigestUtils.sha256Hex(randomPasswrd);
         Instant startDate = Instant.now();
         Instant endDate = startDate.plusSeconds(oneType.getTtl());
-        OneTimePassword oneTimePassword = OneTimePassword.builder()
+        return OneTimePassword.builder()
             .startDate(startDate)
             .endDate(endDate)
             .receiverTypeKey(oneType.getReceiverTypeKey())
@@ -135,7 +136,6 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
             .passwordHash(sha256hex)
             .stateKey(StateKey.ACTIVE)
             .build();
-        return oneTimePassword;
     }
 
     @Override

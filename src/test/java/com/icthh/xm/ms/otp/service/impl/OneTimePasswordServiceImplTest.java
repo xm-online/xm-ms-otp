@@ -1,27 +1,53 @@
 package com.icthh.xm.ms.otp.service.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import com.icthh.xm.ms.otp.OtpApp;
+import com.icthh.xm.ms.otp.config.SecurityBeanOverrideConfiguration;
+import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
+import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import freemarker.template.TemplateException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @Slf4j
 @RunWith(SpringRunner.class)
+@WithMockUser(authorities = {"SUPER-ADMIN"})
+@SpringBootTest(classes = {
+    SecurityBeanOverrideConfiguration.class,
+    OtpApp.class,
+    WebappTenantOverrideConfiguration.class
+})
 public class OneTimePasswordServiceImplTest {
 
-    @InjectMocks
+    @Autowired
     private OneTimePasswordServiceImpl oneTimePasswordService;
+
+    @MockBean
+    private OneTimePasswordRepository oneTimePasswordRepository;
 
     private static final int TTL = 600;
     private static final Integer MAX_RETRIES = 3;
@@ -65,6 +91,42 @@ public class OneTimePasswordServiceImplTest {
         otpTypeSpec.setMessage(null);
 
         oneTimePasswordService.renderMessage(otpTypeSpec, "password", null);
+    }
+
+    @Test
+    public void testFindAll() {
+        OneTimePassword oneTimePassword1 = new OneTimePassword();
+        oneTimePassword1.setId(1L);
+        OneTimePassword oneTimePassword2 = new OneTimePassword();
+        oneTimePassword2.setId(2L);
+        List<OneTimePassword> otpList = new ArrayList<>();
+        otpList.add(oneTimePassword1);
+        otpList.add(oneTimePassword2);
+
+        when(oneTimePasswordRepository.findAll()).thenReturn(otpList);
+        List<OneTimePasswordDto> dtoList = oneTimePasswordService.findAll();
+
+        Assert.assertSame(dtoList.size(), 2);
+        verify(oneTimePasswordRepository, times(1)).findAll();
+    }
+
+    @Test
+    public void testFindOne() {
+        OneTimePassword oneTimePassword = new OneTimePassword();
+        oneTimePassword.setId(1L);
+        when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(oneTimePassword));
+        Optional<OneTimePasswordDto> dto = oneTimePasswordService.findOne(1L);
+
+        Assert.assertTrue(dto.isPresent());
+        Assert.assertSame(dto.get().getId(), 1L);
+        verify(oneTimePasswordRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    public void testDelete() {
+        doNothing().when(oneTimePasswordRepository).deleteById(1L);
+        oneTimePasswordService.delete(1L);
+        verify(oneTimePasswordRepository, times(1)).deleteById(1L);
     }
 
     private OtpSpec.OtpTypeSpec generateOtpTypeSpec() {
