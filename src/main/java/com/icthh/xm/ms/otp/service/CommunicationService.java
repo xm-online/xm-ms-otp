@@ -31,9 +31,7 @@ import static org.springframework.http.HttpMethod.POST;
 public class CommunicationService {
 
     private static final String GRANT_TYPE = "grant_type";
-    private static final String GRANT_TYPE_PASS = "password";
-    private static final String USERNAME = "username";
-    private static final String PASS_KEY = "password";
+    private static final String GRANT_TYPE_CLIENT_CREDENTIALS = "client_credentials";
     private static final String AUTHORIZATION = "Authorization";
     private static final String TOKEN_TYPE = "token_type";
     private static final String ACCESS_TOKEN = "access_token";
@@ -79,10 +77,8 @@ public class CommunicationService {
     protected String getSystemToken() {
 
         Map<String, String> body = new HashMap<>();
-        body.put(GRANT_TYPE, GRANT_TYPE_PASS);
+        body.put(GRANT_TYPE, GRANT_TYPE_CLIENT_CREDENTIALS);
         UaaConfig uaa = otpSpecService.getTenantConfig().getUaa();
-        body.put(USERNAME, uaa.getSystemUsername());
-        body.put(PASS_KEY, uaa.getSystemPassword());
 
         Map<String, String> headers = new HashMap<>();
         headers.put(AUTHORIZATION, uaa.getSystemClientToken());
