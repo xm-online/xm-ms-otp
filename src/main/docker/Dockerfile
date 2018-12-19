@@ -9,8 +9,12 @@ ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
 # add directly the war
 ADD build/libs/*.war /app.war
 
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends --no-install-suggests zip unzip \
+	&& rm -rf /var/lib/apt/lists/*
 
-CMD echo "The application will start in ${JHIPSTER_SLEEP}s..." && \
-    sleep ${JHIPSTER_SLEEP} && \
-    exec java ${JAVA_OPTS} -Xmx$XMX -Djava.security.egd=file:/dev/./urandom -jar /app.war
+ADD src/main/docker/entrypoint.sh /
 
+RUN chmod 755 entrypoint.sh
+
+ENTRYPOINT /entrypoint.sh

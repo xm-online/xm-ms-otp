@@ -15,6 +15,10 @@ public final class Constants {
     public static final String ANONYMOUS_USER = "anonymoususer";
     public static final String DEFAULT_LANGUAGE = "en";
 
+    public static final String DDL_CREATE_SCHEMA = "CREATE SCHEMA IF NOT EXISTS %s";
+    public static final String CHANGE_LOG_PATH = "classpath:config/liquibase/master.xml";
+    public static final String DB_SCHEMA_CREATION_ENABLED = "db.schema.creation.enabled";
+
     public static final Version DEFAULT_FREMARKER_VERSION = Configuration.VERSION_2_3_26;
 
     private Constants() {

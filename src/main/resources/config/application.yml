@@ -78,6 +78,9 @@ spring:
             enabled: false
     thymeleaf:
         mode: HTML
+    liquibase:
+        default-schema: XM
+
 security:
     oauth2:
         resource:
