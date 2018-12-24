@@ -23,6 +23,7 @@ public class ApplicationProperties {
     private boolean timelinesEnabled;
     private String specPath;
     private String tenantPath;
+    private String dbSchemaSuffix;
 
     private final Lep lep = new Lep();
 

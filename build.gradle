@@ -202,6 +202,8 @@ repositories {
     mavenLocal()
     mavenCentral()
     jcenter()
+    maven { url 'https://oss.sonatype.org/content/repositories/releases' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     //jhipster-needle-gradle-repositories - JHipster will add additional repositories
 }
 
@@ -302,6 +304,7 @@ dependencies {
     testCompile "org.hamcrest:hamcrest-library"
     testCompile "com.h2database:h2"
     liquibaseRuntime "com.h2database:h2"
+    compile files("libs/ojdbc8-18.3.0.0.jar")
     //jhipster-needle-gradle-dependency - JHipster will add additional dependencies here
 }
 
