@@ -1,21 +1,18 @@
 package com.icthh.xm.ms.otp.config;
 
 import static com.icthh.xm.ms.otp.config.Constants.CHANGE_LOG_PATH;
-import static com.icthh.xm.ms.otp.config.Constants.DB_SCHEMA_CREATION_ENABLED;
 
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import com.icthh.xm.commons.config.client.repository.TenantListRepository;
 import com.icthh.xm.commons.migration.db.XmMultiTenantSpringLiquibase;
 import com.icthh.xm.commons.migration.db.XmSpringLiquibase;
 
-import com.icthh.xm.ms.otp.util.DatabaseUtil;
+import com.icthh.xm.commons.migration.db.tenant.SchemaResolver;
 import io.github.jhipster.config.JHipsterConstants;
 import io.github.jhipster.config.h2.H2ConfigurationHelper;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 
@@ -26,8 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.context.annotation.Bean;
@@ -56,6 +51,7 @@ public class DatabaseConfiguration {
     private final Environment env;
     private final JpaProperties jpaProperties;
     private final TenantListRepository tenantListRepository;
+    private final SchemaResolver schemaResolver;
 
     /**
      * Open the TCP port for the H2 database, so it is available remotely.
@@ -70,10 +66,9 @@ public class DatabaseConfiguration {
         return H2ConfigurationHelper.createServer();
     }
 
-
     @Bean
     public SpringLiquibase liquibase(DataSource dataSource, LiquibaseProperties liquibaseProperties) {
-        createSchemas(dataSource);
+        schemaResolver.createSchemas(dataSource);
         SpringLiquibase liquibase = new XmSpringLiquibase();
         liquibase.setDataSource(dataSource);
         liquibase.setChangeLog(CHANGE_LOG_PATH);
@@ -100,7 +95,7 @@ public class DatabaseConfiguration {
         liquibase.setContexts(liquibaseProperties.getContexts());
         liquibase.setDefaultSchema(liquibaseProperties.getDefaultSchema());
         liquibase.setDropFirst(liquibaseProperties.isDropFirst());
-        liquibase.setSchemas(getSchemas());
+        liquibase.setSchemas(schemaResolver.getSchemas());
         if (env.acceptsProfiles(JHipsterConstants.SPRING_PROFILE_NO_LIQUIBASE)) {
             liquibase.setShouldRun(false);
         } else {
@@ -108,25 +103,6 @@ public class DatabaseConfiguration {
             log.debug("Configuring Liquibase");
         }
         return liquibase;
-    }
-
-    private void createSchemas(DataSource dataSource) {
-        if (jpaProperties.getProperties().containsKey(DB_SCHEMA_CREATION_ENABLED)
-            && !Boolean.valueOf(jpaProperties.getProperties().get(DB_SCHEMA_CREATION_ENABLED))) {
-            log.info("Schema creation for {} jpa provider is disabled", jpaProperties.getDatabase());
-            return;
-        }
-        for (String schema : getSchemas()) {
-            try {
-                DatabaseUtil.createSchema(dataSource, schema);
-            } catch (Exception e) {
-                log.error("Failed to create schema '{}', error: {}", schema, e.getMessage(), e);
-            }
-        }
-    }
-
-    private List<String> getSchemas() {
-        return new ArrayList<>(tenantListRepository.getTenants());
     }
 
     @Bean
