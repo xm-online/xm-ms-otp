@@ -42,7 +42,6 @@ public class OneTimePasswordResource {
      * or with status 400 (Bad Request) if the oneTimePassword has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-
     @PreAuthorize("hasPermission({'oneTimePasswordDto': #oneTimePasswordDto} ,'OTP.ONETIMEPASSWORD.GENERATE')")
     @PostMapping("/one-time-password")
     @Timed
@@ -64,7 +63,6 @@ public class OneTimePasswordResource {
      * or with status 500 (Internal Server Error) if the oneTimePasswordCheckDto couldn't be checked
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-
     @PreAuthorize("hasPermission({'oneTimePasswordCheckDto': #oneTimePasswordCheckDto} ,'OTP.ONETIMEPASSWORD.CHECK')")
     @PostMapping("/one-time-password/check")
     @Timed
