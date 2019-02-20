@@ -8,6 +8,7 @@ import com.icthh.xm.ms.otp.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +42,8 @@ public class OneTimePasswordResource {
      * or with status 400 (Bad Request) if the oneTimePassword has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
+
+    @PreAuthorize("hasPermission({'oneTimePasswordDto': #oneTimePasswordDto} ,'OTP.ONETIMEPASSWORD.GENERATE')")
     @PostMapping("/one-time-password")
     @Timed
     public ResponseEntity<OneTimePasswordDto> generateOneTimePassword(
@@ -61,6 +64,8 @@ public class OneTimePasswordResource {
      * or with status 500 (Internal Server Error) if the oneTimePasswordCheckDto couldn't be checked
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
+
+    @PreAuthorize("hasPermission({'oneTimePasswordCheckDto': #oneTimePasswordCheckDto} ,'OTP.ONETIMEPASSWORD.CHECK')")
     @PostMapping("/one-time-password/check")
     @Timed
     public ResponseEntity<OneTimePasswordCheckDto> checkOneTimePassword(
