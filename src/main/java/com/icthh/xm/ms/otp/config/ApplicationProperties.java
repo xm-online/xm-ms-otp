@@ -20,6 +20,7 @@ import java.util.List;
 public class ApplicationProperties {
     private String kafkaSystemTopic;
     private String kafkaSystemQueue;
+    private boolean kafkaEnabled;
     private boolean timelinesEnabled;
     private String specPath;
     private String tenantPath;
