@@ -1,6 +1,7 @@
 package com.icthh.xm.ms.otp.config;
 
 import com.icthh.xm.commons.lep.TenantScriptStorage;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -25,10 +26,18 @@ public class ApplicationProperties {
     private String specPath;
     private String tenantPath;
     private String dbSchemaSuffix;
+    private final Retry retry = new Retry();
 
     private final Lep lep = new Lep();
 
     private List<String> tenantIgnoredPathList = Collections.emptyList();
+
+    @Data
+    private static class Retry {
+        private int maxAttempts;
+        private long delay;
+        private int multiplier;
+    }
 
     @Getter
     @Setter
