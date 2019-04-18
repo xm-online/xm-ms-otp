@@ -1,12 +1,12 @@
 package com.icthh.xm.ms.otp.config;
 
 import com.icthh.xm.commons.lep.TenantScriptStorage;
+import java.util.Collections;
+import java.util.List;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Properties specific to Otp.
@@ -33,6 +33,16 @@ public class ApplicationProperties {
     public static class Lep {
         private TenantScriptStorage tenantScriptStorage;
         private String lepResourcePathPattern;
+    }
+
+    // for commons for config dynamic update
+    private final Retry retry = new Retry();
+    @Data
+    private static class Retry {
+
+        private int maxAttempts;
+        private long delay;
+        private int multiplier;
     }
 
 }
