@@ -155,7 +155,7 @@ application:
     retry:
         max-attempts: 3
         delay: 1000 #in milliseconds
-        multiplier: 2:
+        multiplier: 2
     tenant-ignored-path-list: /swagger-resources/configuration/ui, /management/health, /oauth/token_key, /h2-console
     timelines-enabled: true
     spec-path: /config/tenants/XM/otp/otpspec.yml
