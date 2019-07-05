@@ -14,27 +14,20 @@ import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.CommunicationService;
+import com.icthh.xm.ms.otp.service.LoginPageRefreshableConfiguration;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.service.impl.OneTimePasswordServiceImpl;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.icthh.xm.ms.otp.web.rest.errors.ExceptionTranslator;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.charset.Charset;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -51,9 +44,18 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.Validator;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -112,6 +114,8 @@ public class OneTimePasswordResourceIntTest {
     @Autowired
     OtpSpecService otpSpecService;
 
+    @Autowired
+    LoginPageRefreshableConfiguration loginPageRefreshableConfiguration;
 
     private class CommunicationServiceMock extends CommunicationService {
         public CommunicationServiceMock() {
@@ -134,7 +138,7 @@ public class OneTimePasswordResourceIntTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         OneTimePasswordServiceImpl oneTimePasswordService = getOneTimePasswordService();
-        OneTimePasswordResource otp = new OneTimePasswordResource(oneTimePasswordService);
+        OneTimePasswordResource otp = new OneTimePasswordResource(oneTimePasswordService, loginPageRefreshableConfiguration, null, null);
         this.restMockMvc = MockMvcBuilders.standaloneSetup(otp)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -361,6 +365,19 @@ public class OneTimePasswordResourceIntTest {
         assertEquals(newOtp.getRetries().intValue(), 4);
 
         log.info(result.getResponse().getContentAsString());
+    }
+
+    @Test
+    public void emptyLoginPageShouldThrowException() throws Exception {
+
+        MockHttpServletRequestBuilder getContent = get("/api/login")
+            .contentType(APPLICATION_JSON_UTF8);
+        MvcResult result = restMockMvc
+            .perform(getContent)
+            .andExpect(status().is4xxClientError())
+            .andExpect(MockMvcResultMatchers.handler().methodName("login"))
+            .andExpect(status().isNotFound() )
+            .andReturn();
     }
 
     private String toJson(Object dto) throws JsonProcessingException {

@@ -149,6 +149,7 @@ xm-config:
 # ===================================================================
 
 application:
+    login-page: /config/tenants/XM/otp/one-time-password-login.htm
     kafka-enabled: true
     kafka-system-topic: system_topic
     kafka-system-queue: system_queue
