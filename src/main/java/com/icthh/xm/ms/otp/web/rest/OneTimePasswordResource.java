@@ -3,7 +3,6 @@ package com.icthh.xm.ms.otp.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.ImmutableMap;
 import com.icthh.xm.commons.security.XmAuthenticationContextHolder;
-import com.icthh.xm.ms.otp.config.Constants;
 import com.icthh.xm.ms.otp.repository.UaaRepository;
 import com.icthh.xm.ms.otp.service.LoginPageRefreshableConfiguration;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
@@ -12,7 +11,6 @@ import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.web.rest.errors.BadRequestAlertException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -28,20 +26,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
 import javax.validation.Valid;
-import java.io.File;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.icthh.xm.ms.otp.config.Constants.ACCESS_TOKEN;
 import static com.icthh.xm.ms.otp.config.Constants.MSISDN;
-import static java.util.Objects.requireNonNull;
 
 /**
  * REST controller for managing OneTimePassword.
@@ -59,8 +51,8 @@ public class OneTimePasswordResource {
     private final UaaRepository uaaRepository;
     private final XmAuthenticationContextHolder authenticationContextHolder;
 
-    @GetMapping(value = "/login", produces = MediaType.TEXT_HTML_VALUE)
     @Timed
+    @GetMapping(value = "/login", produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<String> login() {
 
         if (loginPageRefreshableConfiguration.getLoginHtmlContent() == null){
@@ -128,17 +120,26 @@ public class OneTimePasswordResource {
         return new RedirectView(new StringBuilder(redirectUri).append("?code=").append(code).toString(), true);
     }
 
+    /**
+     *
+     * POST /oauth/token  Convert  "code" parameter into "access_token" in order to satisfy OAuth protocol
+     * @param code jwt token
+     */
     @PostMapping("/oauth/token")
     @Timed
     public ResponseEntity validateCode(@RequestParam(name = "code") String code) {
         return ResponseEntity.ok(ImmutableMap.of(ACCESS_TOKEN, code));
     }
 
+    /**
+     * GET /userinfo  Return user information gotten from additional details of access_token
+     */
     @GetMapping("/userinfo")
     @Timed
     public ResponseEntity getUserInfo() {
         Optional<String> login = authenticationContextHolder.getContext().getAdditionalDetailsValue(MSISDN);
         if (!login.isPresent()) {
+            log.warn("MSISDN is not set in access token");
             return ResponseEntity.badRequest().build();
         }
         String phoneNumber = login.get();

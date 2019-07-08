@@ -46,6 +46,11 @@ public class UaaRepository {
         };
     }
 
+    /**
+     * Create jwt token on uaa side
+     * @param additionalDetails data that will be included into token in 'details' parameter
+     * @return jwt token
+     */
     public String getOAuth2Token(Map<String, Object> additionalDetails) {
         ParameterizedTypeReference<Map<String, Object>> typeRef = new ParameterizedTypeReference<Map<String, Object>>() {
         };

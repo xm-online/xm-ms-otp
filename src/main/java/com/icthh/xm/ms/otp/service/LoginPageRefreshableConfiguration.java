@@ -1,17 +1,19 @@
 package com.icthh.xm.ms.otp.service;
 
 import com.icthh.xm.commons.config.client.api.RefreshableConfiguration;
+import com.icthh.xm.commons.logging.aop.IgnoreLogginAspect;
 import com.icthh.xm.ms.otp.config.ApplicationProperties;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Service
 @Slf4j
 @RequiredArgsConstructor
+@Component
 public class LoginPageRefreshableConfiguration implements RefreshableConfiguration {
 
     private final ApplicationProperties appProps;

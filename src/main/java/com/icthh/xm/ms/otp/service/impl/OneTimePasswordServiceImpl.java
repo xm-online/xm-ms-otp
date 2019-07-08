@@ -93,7 +93,6 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
         String message = renderMessage(otpType, randomPasswrd, oneTimePasswordDto.getLangKey());
 
-        //log.info("MESSAGE: "+message);
         oneTimePasswordRepository.saveAndFlush(otp);
 
         communicationService.sendOneTimePassword(message, otp.getReceiver(), otpType.getOtpSenderId());
