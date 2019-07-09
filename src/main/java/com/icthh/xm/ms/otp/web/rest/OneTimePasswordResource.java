@@ -32,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Optional;
 
+import static com.google.common.collect.ImmutableMap.*;
 import static com.icthh.xm.ms.otp.config.Constants.ACCESS_TOKEN;
 import static com.icthh.xm.ms.otp.config.Constants.MSISDN;
 
@@ -55,11 +56,11 @@ public class OneTimePasswordResource {
     @GetMapping(value = "/login", produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<String> login() {
 
-        if (loginPageRefreshableConfiguration.getLoginHtmlContent() == null){
+        if (loginPageRefreshableConfiguration.getLoginContent() == null){
             return ResponseEntity.notFound().build();
         }
         log.debug("REST login request");
-        return ResponseEntity.ok(loginPageRefreshableConfiguration.getLoginHtmlContent());
+        return ResponseEntity.ok(loginPageRefreshableConfiguration.getLoginContent());
     }
 
     /**
@@ -116,7 +117,7 @@ public class OneTimePasswordResource {
         redirectUri = decodeUrl(redirectUri);
         checkOneTimePassword(oneTimePasswordCheckDto);
         OneTimePasswordDto dto = oneTimePasswordService.findOne(oneTimePasswordCheckDto.getId()).get();
-        String code =  uaaRepository.getOAuth2Token(ImmutableMap.of(MSISDN, dto.getReceiver()));
+        String code =  uaaRepository.getOAuth2Token(of(MSISDN, dto.getReceiver()));
         return new RedirectView(new StringBuilder(redirectUri).append("?code=").append(code).toString(), true);
     }
 
@@ -128,7 +129,7 @@ public class OneTimePasswordResource {
     @PostMapping("/oauth/token")
     @Timed
     public ResponseEntity validateCode(@RequestParam(name = "code") String code) {
-        return ResponseEntity.ok(ImmutableMap.of(ACCESS_TOKEN, code));
+        return ResponseEntity.ok(of(ACCESS_TOKEN, code));
     }
 
     /**
@@ -143,10 +144,7 @@ public class OneTimePasswordResource {
             return ResponseEntity.badRequest().build();
         }
         String phoneNumber = login.get();
-        return ResponseEntity.ok(new HashMap<String, String>(){{
-            put("phoneNumber", phoneNumber);
-            put("id", phoneNumber);
-        }});
+        return ResponseEntity.ok(of("phoneNumber", phoneNumber, "id", phoneNumber));
     }
 
     @SneakyThrows
