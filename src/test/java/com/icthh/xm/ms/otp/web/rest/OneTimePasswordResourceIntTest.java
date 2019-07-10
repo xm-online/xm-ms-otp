@@ -4,23 +4,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.common.collect.ImmutableMap;
 import com.icthh.xm.commons.security.XmAuthenticationContext;
 import com.icthh.xm.commons.security.XmAuthenticationContextHolder;
 import com.icthh.xm.ms.otp.OtpApp;
 import com.icthh.xm.ms.otp.config.ApplicationProperties;
 import com.icthh.xm.ms.otp.config.Constants;
 import com.icthh.xm.ms.otp.config.SecurityBeanOverrideConfiguration;
+import com.icthh.xm.ms.otp.config.WebConfigurer;
 import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
-import com.icthh.xm.ms.otp.repository.UaaRepository;
 import com.icthh.xm.ms.otp.service.CommunicationService;
-import com.icthh.xm.ms.otp.service.LoginPageRefreshableConfiguration;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
+import com.icthh.xm.ms.otp.service.UaaService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.service.impl.OneTimePasswordServiceImpl;
@@ -33,7 +32,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -56,12 +54,7 @@ import java.math.BigInteger;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.UUID;
+import java.util.*;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -72,12 +65,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlTemplate;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Test class for the OneTimePasswordResource REST controller.
@@ -133,11 +121,8 @@ public class OneTimePasswordResourceIntTest {
     @Autowired
     OtpSpecService otpSpecService;
 
-    @Autowired
-    LoginPageRefreshableConfiguration loginPageRefreshableConfiguration;
-
     @MockBean
-    UaaRepository uaaRepository;
+    UaaService uaaRepository;
 
     @MockBean
     XmAuthenticationContextHolder authenticationContextHolder;
@@ -163,7 +148,7 @@ public class OneTimePasswordResourceIntTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         OneTimePasswordServiceImpl oneTimePasswordService = getOneTimePasswordService();
-        OneTimePasswordResource otp = new OneTimePasswordResource(oneTimePasswordService, loginPageRefreshableConfiguration, uaaRepository, authenticationContextHolder);
+        OneTimePasswordResource otp = new OneTimePasswordResource(oneTimePasswordService, uaaRepository, authenticationContextHolder);
         this.restMockMvc = MockMvcBuilders.standaloneSetup(otp)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -393,20 +378,6 @@ public class OneTimePasswordResourceIntTest {
     }
 
     @Test
-    public void emptyLoginPageShouldThrowException() throws Exception {
-
-        MockHttpServletRequestBuilder getContent = get("/api/login")
-            .contentType(APPLICATION_JSON_UTF8);
-        MvcResult result = restMockMvc
-            .perform(getContent)
-            .andExpect(status().is4xxClientError())
-            .andExpect(MockMvcResultMatchers.handler().methodName("login"))
-            .andExpect(status().isNotFound() )
-            .andReturn();
-    }
-
-
-    @Test
     @Transactional
     public void validateOtpTokenMustReturnCodeParameterInRedirect() throws Exception {
 
@@ -430,7 +401,7 @@ public class OneTimePasswordResourceIntTest {
         restMockMvc
             .perform(postContent)
             .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl(URLDecoder.decode(redirectUrl, CharsetUtil.UTF_8.name())+"?code="+token))
+            .andExpect(redirectedUrl(URLDecoder.decode(redirectUrl, CharsetUtil.UTF_8.name()) + "?code=" + token))
             .andExpect(MockMvcResultMatchers.handler().methodName("checkOneTimePasswordAndRedirectWithCode"))
             .andReturn();
 
@@ -444,7 +415,7 @@ public class OneTimePasswordResourceIntTest {
         String mobile = "380503333333";
         XmAuthenticationContext mock = mock(XmAuthenticationContext.class);
         when(authenticationContextHolder.getContext()).thenReturn(mock);
-        when(mock.getAdditionalDetailsValue(eq(Constants.MSISDN))).thenReturn(Optional.of(mobile));
+        when(mock.getAdditionalDetailsValue(eq(Constants.RECEIVER))).thenReturn(Optional.of(mobile));
 
         MockHttpServletRequestBuilder postContent = get("/api/userinfo")
             .contentType(APPLICATION_JSON_UTF8);
@@ -467,7 +438,7 @@ public class OneTimePasswordResourceIntTest {
 
         XmAuthenticationContext mock = mock(XmAuthenticationContext.class);
         when(authenticationContextHolder.getContext()).thenReturn(mock);
-        when(mock.getAdditionalDetailsValue(eq(Constants.MSISDN))).thenReturn(Optional.empty());
+        when(mock.getAdditionalDetailsValue(eq(Constants.RECEIVER))).thenReturn(Optional.empty());
 
         MockHttpServletRequestBuilder postContent = get("/api/userinfo")
             .contentType(APPLICATION_JSON_UTF8);

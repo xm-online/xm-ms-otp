@@ -15,7 +15,7 @@ public final class Constants {
     public static final String X_TENANT = "x-tenant";
     public static final String ACCESS_TOKEN = "access_token";
     public static final String ANONYMOUS_USER = "anonymoususer";
-    public static final String MSISDN = "msisdn";
+    public static final String RECEIVER = "receiver";
     public static final String DEFAULT_LANGUAGE = "en";
 
     public static final String DDL_CREATE_SCHEMA = "CREATE SCHEMA IF NOT EXISTS %s";

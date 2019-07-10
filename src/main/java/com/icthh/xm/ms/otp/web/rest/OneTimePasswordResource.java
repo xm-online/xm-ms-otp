@@ -1,11 +1,9 @@
 package com.icthh.xm.ms.otp.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
-import com.google.common.collect.ImmutableMap;
 import com.icthh.xm.commons.security.XmAuthenticationContextHolder;
-import com.icthh.xm.ms.otp.repository.UaaRepository;
-import com.icthh.xm.ms.otp.service.LoginPageRefreshableConfiguration;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
+import com.icthh.xm.ms.otp.service.UaaService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.web.rest.errors.BadRequestAlertException;
@@ -16,25 +14,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
 import javax.validation.Valid;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Optional;
 
-import static com.google.common.collect.ImmutableMap.*;
+import static com.google.common.collect.ImmutableMap.of;
 import static com.icthh.xm.ms.otp.config.Constants.ACCESS_TOKEN;
-import static com.icthh.xm.ms.otp.config.Constants.MSISDN;
+import static com.icthh.xm.ms.otp.config.Constants.RECEIVER;
 
 /**
  * REST controller for managing OneTimePassword.
@@ -48,19 +40,13 @@ public class OneTimePasswordResource {
 
     private static final String ENTITY_NAME = "otpOneTimePassword";
     private final OneTimePasswordService oneTimePasswordService;
-    private final LoginPageRefreshableConfiguration loginPageRefreshableConfiguration;
-    private final UaaRepository uaaRepository;
+    private final UaaService uaaRepository;
     private final XmAuthenticationContextHolder authenticationContextHolder;
 
     @Timed
     @GetMapping(value = "/login", produces = MediaType.TEXT_HTML_VALUE)
-    public ResponseEntity<String> login() {
-
-        if (loginPageRefreshableConfiguration.getLoginContent() == null){
-            return ResponseEntity.notFound().build();
-        }
-        log.debug("REST login request");
-        return ResponseEntity.ok(loginPageRefreshableConfiguration.getLoginContent());
+    public ModelAndView login() {
+        return new ModelAndView("loginPageView");
     }
 
     /**
@@ -117,7 +103,7 @@ public class OneTimePasswordResource {
         redirectUri = decodeUrl(redirectUri);
         checkOneTimePassword(oneTimePasswordCheckDto);
         OneTimePasswordDto dto = oneTimePasswordService.findOne(oneTimePasswordCheckDto.getId()).get();
-        String code =  uaaRepository.getOAuth2Token(of(MSISDN, dto.getReceiver()));
+        String code =  uaaRepository.getOAuth2Token(of(RECEIVER, dto.getReceiver()));
         return new RedirectView(new StringBuilder(redirectUri).append("?code=").append(code).toString(), true);
     }
 
@@ -138,9 +124,9 @@ public class OneTimePasswordResource {
     @GetMapping("/userinfo")
     @Timed
     public ResponseEntity getUserInfo() {
-        Optional<String> login = authenticationContextHolder.getContext().getAdditionalDetailsValue(MSISDN);
+        Optional<String> login = authenticationContextHolder.getContext().getAdditionalDetailsValue(RECEIVER);
         if (!login.isPresent()) {
-            log.warn("MSISDN is not set in access token");
+            log.warn("Receiver is not set in access token");
             return ResponseEntity.badRequest().build();
         }
         String phoneNumber = login.get();

@@ -1,4 +1,4 @@
-package com.icthh.xm.ms.otp.repository;
+package com.icthh.xm.ms.otp.service;
 
 import com.icthh.xm.commons.tenant.TenantContextUtils;
 import com.icthh.xm.commons.tenant.TenantKey;
@@ -26,7 +26,7 @@ import static com.icthh.xm.ms.otp.config.Constants.X_TENANT;
 
 @Component
 @RequiredArgsConstructor
-public class UaaRepository {
+public class UaaService {
 
     private final JHipsterProperties jHipsterProperties;
     @Qualifier("internalRestTemplate")
@@ -35,7 +35,7 @@ public class UaaRepository {
     private MultiValueMap<String, String> oauthTokenRequestMap;
 
     @PostConstruct
-    private void init(){
+    private void init() {
 
         oauthTokenRequestMap = new LinkedMultiValueMap<String, String>() {
             {
@@ -48,6 +48,7 @@ public class UaaRepository {
 
     /**
      * Create jwt token on uaa side
+     *
      * @param additionalDetails data that will be included into token in 'details' parameter
      * @return jwt token
      */

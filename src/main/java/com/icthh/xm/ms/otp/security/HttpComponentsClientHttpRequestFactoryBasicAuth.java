@@ -12,7 +12,6 @@ import java.net.URI;
 
 public class HttpComponentsClientHttpRequestFactoryBasicAuth extends HttpComponentsClientHttpRequestFactory {
 
-
     public HttpComponentsClientHttpRequestFactoryBasicAuth() {
         super();
     }

@@ -3,6 +3,8 @@ package com.icthh.xm.ms.otp.config;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.servlet.InstrumentedFilter;
 import com.codahale.metrics.servlets.MetricsServlet;
+import com.icthh.xm.ms.otp.service.LoginPageRefreshableConfiguration;
+import com.icthh.xm.ms.otp.web.rest.view.LoginPageView;
 import io.github.jhipster.config.JHipsterConstants;
 import io.github.jhipster.config.JHipsterProperties;
 import io.github.jhipster.config.h2.H2ConfigurationHelper;
@@ -21,6 +23,9 @@ import org.springframework.http.MediaType;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.view.BeanNameViewResolver;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import javax.servlet.*;
 import java.nio.charset.StandardCharsets;
@@ -132,6 +137,17 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
         }
         return new CorsFilter(source);
     }
+
+    @Bean("loginPageView")
+    public LoginPageView loginPageView(LoginPageRefreshableConfiguration loginPageRefreshableConfiguration){
+        return new LoginPageView(loginPageRefreshableConfiguration);
+    }
+
+    @Bean
+    public ViewResolver loginPageViewResolver() {
+        return new BeanNameViewResolver();
+    }
+
 
     /**
      * Initializes H2 console.
