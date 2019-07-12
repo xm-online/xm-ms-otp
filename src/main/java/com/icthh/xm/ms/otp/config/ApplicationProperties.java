@@ -26,6 +26,7 @@ public class ApplicationProperties {
     private String specPath;
     private String tenantPath;
     private String dbSchemaSuffix;
+    private String loginPage;
     private final Retry retry = new Retry();
 
     private final Lep lep = new Lep();

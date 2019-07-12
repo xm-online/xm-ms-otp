@@ -6,10 +6,14 @@ import com.icthh.xm.commons.security.oauth2.OAuth2Properties;
 import com.icthh.xm.commons.security.oauth2.OAuth2SignatureVerifierClient;
 import com.icthh.xm.ms.otp.security.AuthoritiesConstants;
 
+import com.icthh.xm.ms.otp.security.HttpComponentsClientHttpRequestFactoryBasicAuth;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -44,6 +48,9 @@ public class SecurityConfiguration extends ResourceServerConfigurerAdapter {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and()
             .authorizeRequests()
+            .antMatchers("/api/login").permitAll()
+            .antMatchers("/api/userinfo").permitAll()
+            .antMatchers("/api/oauth/token").permitAll()
             .antMatchers("/api/**").authenticated()
             .antMatchers("/management/health").permitAll()
             .antMatchers("/management/info").permitAll()
@@ -71,6 +78,18 @@ public class SecurityConfiguration extends ResourceServerConfigurerAdapter {
     public RestTemplate loadBalancedRestTemplate(RestTemplateCustomizer customizer) {
         RestTemplate restTemplate = new RestTemplate();
         customizer.customize(restTemplate);
+        return restTemplate;
+    }
+
+    @Bean
+    @Qualifier("internalRestTemplate")
+    public RestTemplate internalRestTemplate(RestTemplateCustomizer customizer,
+                                             @Value("${jhipster.security.client-authorization.client-id}") String clientId,
+                                             @Value("${jhipster.security.client-authorization.client-secret}") String clientSecret) {
+        final ClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactoryBasicAuth();
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+        customizer.customize(restTemplate);
+        restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(clientId, clientSecret));
         return restTemplate;
     }
 
