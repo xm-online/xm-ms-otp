@@ -13,4 +13,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OneTimePasswordRepository extends JpaRepository<OneTimePassword, Long> {
 
+    //currently it is to be used in lep only
+    OneTimePassword findTopByReceiverOrderByIdDesc(String receiver);
 }

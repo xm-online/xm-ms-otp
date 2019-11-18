@@ -6,6 +6,7 @@ import com.icthh.xm.commons.lep.commons.CommonsService;
 import com.icthh.xm.commons.lep.spring.SpringLepProcessingApplicationListener;
 import com.icthh.xm.commons.permission.service.PermissionCheckService;
 import com.icthh.xm.lep.api.ScopedContext;
+import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.client.RestTemplate;
 
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_KEY_COMMONS;
+import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_KEY_OTP_REPOSITORY;
 import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_KEY_SERVICES;
 import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_KEY_TEMPLATES;
 import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_SUB_KEY_PERMISSION_SERVICE;
@@ -30,6 +32,7 @@ public class XmMsLepProcessingApplicationListener extends SpringLepProcessingApp
     private final RestTemplate restTemplate;
 
     private final CommonsService commonsService;
+    private final OneTimePasswordRepository oneTimePasswordRepository;
     private final PermissionCheckService permissionCheckService;
 
 
@@ -42,6 +45,7 @@ public class XmMsLepProcessingApplicationListener extends SpringLepProcessingApp
 
         executionContext.setValue(BINDING_KEY_COMMONS, new CommonsExecutor(commonsService));
         executionContext.setValue(BINDING_KEY_SERVICES, services);
+        executionContext.setValue(BINDING_KEY_OTP_REPOSITORY, oneTimePasswordRepository);
 
         // templates
         Map<String, Object> templates = new HashMap<>();
