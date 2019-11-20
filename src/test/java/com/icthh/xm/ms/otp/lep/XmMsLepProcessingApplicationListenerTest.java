@@ -1,6 +1,7 @@
 package com.icthh.xm.ms.otp.lep;
 
 import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_KEY_COMMONS;
+import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_KEY_OTP_REPOSITORY;
 import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_KEY_SERVICES;
 import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_KEY_TEMPLATES;
 import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_SUB_KEY_PERMISSION_SERVICE;
@@ -19,6 +20,7 @@ import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,10 +49,11 @@ public class XmMsLepProcessingApplicationListenerTest {
         ScopedContext context = new DefaultScopedContext("scope");
         listener.bindExecutionContext(context);
 
-        assertEquals(context.getValues().size(), 3);
+        assertEquals(context.getValues().size(), 4);
         assertNotNull(context.getValue(BINDING_KEY_COMMONS, CommonsExecutor.class));
         assertNotNull(context.getValue(BINDING_KEY_SERVICES, Map.class));
         assertNotNull(context.getValue(BINDING_KEY_TEMPLATES, Map.class));
+        assertNotNull(context.getValue(BINDING_KEY_OTP_REPOSITORY, OneTimePasswordRepository.class));
 
         Map<String, Object> services = (HashMap<String, Object>)context.getValue(BINDING_KEY_SERVICES, HashMap.class);
         assertEquals(services.values().size(), 2);
