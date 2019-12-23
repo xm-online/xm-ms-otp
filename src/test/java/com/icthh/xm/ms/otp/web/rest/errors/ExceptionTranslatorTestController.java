@@ -45,7 +45,7 @@ public class ExceptionTranslatorTestController {
     }
 
     @GetMapping("/test/access-denied")
-    public void accessdenied() {
+    public void accessDenied() {
         throw new AccessDeniedException("test access denied!");
     }
 
@@ -55,7 +55,7 @@ public class ExceptionTranslatorTestController {
     }
 
     @GetMapping("/test/response-status")
-    public void exceptionWithReponseStatus() {
+    public void exceptionWithResponseStatus() {
         throw new TestResponseStatusException();
     }
 
@@ -81,6 +81,11 @@ public class ExceptionTranslatorTestController {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "test response status")
     @SuppressWarnings("serial")
     public static class TestResponseStatusException extends RuntimeException {
+    }
+
+    @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "test access denied!")
+    @SuppressWarnings("serial")
+    public static class TestForbiddenException extends RuntimeException {
     }
 
 }

@@ -42,8 +42,12 @@ spring:
             hibernate.cache.use_query_cache: false
             hibernate.generate_statistics: true
             hibernate.hbm2ddl.auto: validate
+            hibernate.model.generator_name_as_sequence_name: false
+            # see org.hibernate.cfg.AvailableSettings.PREFER_GENERATOR_NAME_AS_DEFAULT_SEQUENCE_NAME
     liquibase:
         contexts: test
+    main:
+        allow-bean-definition-overriding: true
     mail:
         host: localhost
     messages:
@@ -99,10 +103,8 @@ jhipster:
             client-id: internal
             client-secret: internal
     metrics: # DropWizard Metrics configuration, used by MetricsConfiguration
-        jmx.enabled: true
         logs: # Reports Dropwizard metrics in the logs
-            enabled: true
-            report-frequency: 60 # in seconds
+            enabled: false
 
 # ===================================================================
 # Application specific properties

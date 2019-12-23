@@ -71,6 +71,8 @@ spring:
             naming:
                 physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
                 implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+    main:
+        allow-bean-definition-overriding: true
     messages:
         basename: i18n/messages
     mvc:

@@ -10,7 +10,6 @@ import com.icthh.xm.ms.otp.OtpApp;
 import com.icthh.xm.ms.otp.config.ApplicationProperties;
 import com.icthh.xm.ms.otp.config.Constants;
 import com.icthh.xm.ms.otp.config.SecurityBeanOverrideConfiguration;
-import com.icthh.xm.ms.otp.config.WebConfigurer;
 import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
 import com.icthh.xm.ms.otp.domain.OtpSpec;
@@ -25,7 +24,7 @@ import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.service.impl.OneTimePasswordServiceImpl;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.icthh.xm.ms.otp.web.rest.errors.ExceptionTranslator;
-import io.netty.util.CharsetUtil;
+import feign.form.util.CharsetUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -214,13 +213,13 @@ public class OneTimePasswordResourceIntTest {
         assertEquals(byId.getReceiver(), RECEIVER);
         assertEquals(byId.getTypeKey(), TYPE_KEY);
         assertEquals(byId.getStateKey(), StateKey.ACTIVE);
-        assertEquals(byId.getRetries(), new Integer(BigInteger.ZERO.intValue()));
+        assertEquals(byId.getRetries(), Integer.valueOf(BigInteger.ZERO.intValue()));
         assertEquals(byId.getReceiverTypeKey(), ReceiverTypeKey.PHONE_NUMBER);
     }
 
     @Test
     @Transactional
-    public void testCheckOneTimePassword() throws Exception {
+    public void checkOneTimePassword() throws Exception {
 
         //init DB
         OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
@@ -486,10 +485,10 @@ public class OneTimePasswordResourceIntTest {
     private OneTimePassword createOtp() {
         OneTimePassword oneTimePassword = new OneTimePassword();
         oneTimePassword.setPasswordHash(DigestUtils.sha256Hex(DEFAULT_OTP));
-        oneTimePassword.setEndDate(Instant.MAX);
+        oneTimePassword.setEndDate( Instant.ofEpochMilli(Long.MAX_VALUE));
         oneTimePassword.setReceiver("receiver");
         oneTimePassword.setReceiverTypeKey(ReceiverTypeKey.IP);
-        oneTimePassword.setStartDate(Instant.MIN);
+        oneTimePassword.setStartDate( Instant.ofEpochMilli(Long.MIN_VALUE));
         oneTimePassword.setTypeKey("TYPE1");
         oneTimePassword.setStateKey(StateKey.ACTIVE);
         oneTimePassword.setRetries(1);
