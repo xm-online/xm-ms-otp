@@ -2,14 +2,12 @@ package com.icthh.xm.ms.otp.config;
 
 import static com.icthh.xm.ms.otp.config.Constants.CHANGE_LOG_PATH;
 
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import com.icthh.xm.commons.config.client.repository.TenantListRepository;
 import com.icthh.xm.commons.migration.db.XmMultiTenantSpringLiquibase;
 import com.icthh.xm.commons.migration.db.XmSpringLiquibase;
 
 import com.icthh.xm.commons.migration.db.tenant.SchemaResolver;
 import io.github.jhipster.config.JHipsterConstants;
-import io.github.jhipster.config.h2.H2ConfigurationHelper;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -20,6 +18,7 @@ import liquibase.integration.spring.MultiTenantSpringLiquibase;
 import liquibase.integration.spring.SpringLiquibase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.h2.tools.Server;
 import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
@@ -61,9 +60,9 @@ public class DatabaseConfiguration {
      */
     @Bean(initMethod = "start", destroyMethod = "stop")
     @Profile(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT)
-    public Object h2TCPServer() throws SQLException {
+    public Server h2TCPServer() throws SQLException {
         log.debug("Starting H2 database");
-        return H2ConfigurationHelper.createServer("9093");
+        return Server.createTcpServer("-tcp", "-tcpAllowOthers");
     }
 
     @Bean
