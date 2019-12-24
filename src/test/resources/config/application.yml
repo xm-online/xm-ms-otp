@@ -17,6 +17,13 @@
 spring:
     application:
         name: otp
+    cloud:
+        bus:
+            enabled: false
+        discovery:
+            enabled: false
+        consul:
+            enabled: false
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
         url: jdbc:h2:mem:otp;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
