@@ -19,7 +19,6 @@ ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
     --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED"
 # --add-opens skip warning for groovy lib, see https://issues.apache.org/jira/browse/GROOVY-8339
 
-
 # add directly the war
 ADD build/libs/*.war /app.war
 
