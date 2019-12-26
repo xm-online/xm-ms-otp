@@ -84,8 +84,8 @@ public class SecurityConfiguration extends ResourceServerConfigurerAdapter {
     @Bean
     @Qualifier("internalRestTemplate")
     public RestTemplate internalRestTemplate(RestTemplateCustomizer customizer,
-                                             @Value("${server.security.client-authorization.client-id}") String clientId,
-                                             @Value("${server.security.client-authorization.client-secret}") String clientSecret) {
+                                             @Value("${jhipster.security.client-authorization.client-id}") String clientId,
+                                             @Value("${jhipster.security.client-authorization.client-secret}") String clientSecret) {
         final ClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactoryBasicAuth();
         RestTemplate restTemplate = new RestTemplate(requestFactory);
         customizer.customize(restTemplate);

@@ -71,7 +71,9 @@ spring:
     h2:
         console:
             enabled: false
-
+server:
+    port: 10344
+    address: localhost
 
 info:
     project:
@@ -82,9 +84,8 @@ info:
 #
 # Full reference is available at: https://www.jhipster.tech/common-application-properties/
 # ===================================================================
-server:
-    port: 10344
-    address: localhost
+
+jhipster:
     async:
         core-pool-size: 1
         max-pool-size: 50

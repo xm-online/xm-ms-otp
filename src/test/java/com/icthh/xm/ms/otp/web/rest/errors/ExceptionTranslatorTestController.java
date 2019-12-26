@@ -83,9 +83,4 @@ public class ExceptionTranslatorTestController {
     public static class TestResponseStatusException extends RuntimeException {
     }
 
-    @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "test access denied!")
-    @SuppressWarnings("serial")
-    public static class TestForbiddenException extends RuntimeException {
-    }
-
 }

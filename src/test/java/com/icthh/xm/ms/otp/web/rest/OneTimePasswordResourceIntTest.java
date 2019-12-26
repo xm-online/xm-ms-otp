@@ -219,7 +219,7 @@ public class OneTimePasswordResourceIntTest {
 
     @Test
     @Transactional
-    public void checkOneTimePassword() throws Exception {
+    public void testCheckOneTimePassword() throws Exception {
 
         //init DB
         OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
