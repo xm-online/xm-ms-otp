@@ -59,10 +59,6 @@ if (project.hasProperty("zipkin")) {
     apply from: "gradle/zipkin.gradle"
 }
 
-war {
-
-}
-
 idea {
     module {
         excludeDirs += files("node_modules")
@@ -103,6 +99,15 @@ defaultTasks "bootRun"
 
 springBoot {
     mainClassName = "com.icthh.xm.ms.otp.OtpApp"
+}
+
+bootWar {
+    mainClassName = "com.icthh.xm.ms.otp.OtpApp"
+    manifest {
+        attributes(
+            "Implementation-Version": archiveVersion
+        )
+    }
 }
 
 test {
