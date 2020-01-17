@@ -61,7 +61,7 @@ public class OneTimePasswordResource {
     @PreAuthorize("hasPermission({'oneTimePasswordDto': #oneTimePasswordDto} ,'OTP.ONETIMEPASSWORD.GENERATE')")
     @PostMapping("/one-time-password")
     @Timed
-    @PrivilegeDescription("Privilege to create a new oneTimePassword")
+    @PrivilegeDescription("Privilege to create a new one time password")
     public ResponseEntity<OneTimePasswordDto> generateOneTimePassword(
         @Valid @RequestBody OneTimePasswordDto oneTimePasswordDto) throws URISyntaxException {
 
