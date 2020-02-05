@@ -84,6 +84,11 @@ info:
 #
 # Full reference is available at: https://www.jhipster.tech/common-application-properties/
 # ===================================================================
+management:
+    metrics:
+        export:
+            prometheus:
+                enabled: true
 
 jhipster:
     async:
