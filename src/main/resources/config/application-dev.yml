@@ -59,6 +59,7 @@ spring:
             hibernate.cache.use_second_level_cache: false
             hibernate.cache.use_query_cache: false
             hibernate.generate_statistics: true
+            hibernate.model.generator_name_as_sequence_name: false # see org.hibernate.cfg.AvailableSettings.PREFER_GENERATOR_NAME_AS_DEFAULT_SEQUENCE_NAME
     liquibase:
         contexts: dev
     mail:
@@ -77,10 +78,12 @@ spring:
             discovery:
                 enabled: true
     kafka:
-        bootstrap-servers: localhost:9093
+        bootstrap-servers: localhost:9092
 
 server:
     port: 8087
+    http2:
+        enabled: false # To use HTTP/2 you will need SSL support (see above the "server.ssl" configuration)
 
 # ===================================================================
 # JHipster specific properties
@@ -89,17 +92,6 @@ server:
 # ===================================================================
 
 jhipster:
-    http:
-        version: V_1_1 # To use HTTP/2 you will need to activate TLS (see application-tls.yml)
-    # CORS is disabled by default on microservices, as you should access them through a gateway.
-    # If you want to enable it, please uncomment the configuration below.
-    # cors:
-        # allowed-origins: "*"
-        # allowed-methods: "*"
-        # allowed-headers: "*"
-        # exposed-headers: "Authorization,Link,X-Total-Count"
-        # allow-credentials: true
-        # max-age: 1800
     security:
         client-authorization:
             access-token-uri: http://uaa/oauth/token
@@ -110,11 +102,8 @@ jhipster:
         from: otp@localhost
         base-url: http://127.0.0.1:8087
     metrics: # DropWizard Metrics configuration, used by MetricsConfiguration
-        jmx:
-            enabled: true
         logs: # Reports Dropwizard metrics in the logs
             enabled: false
-            report-frequency: 60 # in seconds
     logging:
         logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
             enabled: false

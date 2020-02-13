@@ -3,7 +3,7 @@
     "promptValues": {
       "packageName": "com.icthh.xm.ms.otp"
     },
-    "jhipsterVersion": "5.3.4",
+    "jhipsterVersion": "6.5.1",
     "applicationType": "microservice",
     "baseName": "otp",
     "packageName": "com.icthh.xm.ms.otp",
@@ -21,14 +21,19 @@
     "serviceDiscoveryType": "consul",
     "buildTool": "gradle",
     "enableSwaggerCodegen": false,
-    "jwtSecretKey": "Njc0NGYxYTg1Y2MyNTMwYzBkZGM5ZmU4N2YyYWM1MzEyYTNjZDU3MThkZTBlYzZmNmQ0NjExY2YyNDUzYjFhZDM4NjgxMjFhNzQ1Y2JmMDk4ZTBlYWRhNTE0YmY3NjY2ZjEzNzQ3ZWM2NGY3NzIzMDZkM2MzOTczZGY4YTAyZTE=",
-    "enableTranslation": false,
+    "jwtSecretKey": "YTgzYzM1NDFhMTBhZDIyNTMxZDliZmM3NzFkZGE3NzA1NDVmYzZmNDM0MWM3OTljNTFlOGM2MWI5MzUxZDE2OTgyYjVmY2NmOGU3Y2YzYjFhMDRkYWJlN2NiYWM3OGMxZWIzZjdlM2M4MzgxNzYyYjY0NGZlNzAxMmE0ZTRiMGQ=",
+    "embeddableLaunchScript": false,
     "testFrameworks": [
       "gatling",
       "cucumber"
     ],
     "jhiPrefix": "jhi",
+    "entitySuffix": "",
+    "dtoSuffix": "DTO",
+    "otherModules": [],
+    "enableTranslation": false,
     "clientPackageManager": "npm",
+    "blueprints": [],
     "skipClient": true,
     "skipUserManagement": true
   }

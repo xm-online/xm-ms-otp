@@ -1,6 +1,7 @@
 package com.icthh.xm.ms.otp.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import com.icthh.xm.commons.permission.annotation.PrivilegeDescription;
 import com.icthh.xm.commons.security.XmAuthenticationContextHolder;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.service.UaaService;
@@ -60,6 +61,7 @@ public class OneTimePasswordResource {
     @PreAuthorize("hasPermission({'oneTimePasswordDto': #oneTimePasswordDto} ,'OTP.ONETIMEPASSWORD.GENERATE')")
     @PostMapping("/one-time-password")
     @Timed
+    @PrivilegeDescription("Privilege to create a new one time password")
     public ResponseEntity<OneTimePasswordDto> generateOneTimePassword(
         @Valid @RequestBody OneTimePasswordDto oneTimePasswordDto) throws URISyntaxException {
 
@@ -81,6 +83,7 @@ public class OneTimePasswordResource {
     @PreAuthorize("hasPermission({'oneTimePasswordCheckDto': #oneTimePasswordCheckDto} ,'OTP.ONETIMEPASSWORD.CHECK')")
     @PostMapping("/one-time-password/check")
     @Timed
+    @PrivilegeDescription("Privilege to validate an existing oneTimePassword")
     public ResponseEntity<OneTimePasswordCheckDto> checkOneTimePassword(
         @Valid @RequestBody OneTimePasswordCheckDto oneTimePasswordCheckDto) throws URISyntaxException {
         log.debug("REST request to update OneTimePassword : {}", oneTimePasswordCheckDto);
@@ -98,6 +101,7 @@ public class OneTimePasswordResource {
     @PreAuthorize("hasPermission({'oneTimePasswordCheckDto': #oneTimePasswordCheckDto} ,'OTP.ONETIMEPASSWORD.CHECK')")
     @PostMapping("/one-time-password/validate")
     @Timed
+    @PrivilegeDescription("Privilege to validate an existing oneTimePassword")
     public RedirectView checkOneTimePasswordAndRedirectWithCode(@Valid @RequestBody OneTimePasswordCheckDto oneTimePasswordCheckDto,
                                                                 @RequestHeader(value = "redirect-uri") String redirectUri) throws URISyntaxException {
         redirectUri = decodeUrl(redirectUri);
