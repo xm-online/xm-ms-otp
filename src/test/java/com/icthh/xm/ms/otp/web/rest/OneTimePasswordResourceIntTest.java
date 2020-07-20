@@ -254,6 +254,27 @@ public class OneTimePasswordResourceIntTest {
 
     @Test
     @Transactional
+    public void testGetOneTimePassword() throws Exception {
+        //init DB
+        OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
+
+        MvcResult result = restMockMvc
+            .perform(get("/api/one-time-password/" + otp.getId()))
+            .andExpect(status().isOk())
+            .andExpect(MockMvcResultMatchers.handler().methodName("getOneTimePassword"))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andReturn();
+
+        OneTimePasswordDto otpResponse = toDto(result.getResponse().getContentAsString(), OneTimePasswordDto.class);
+
+        assertEquals(otp.getId(), otpResponse.getId());
+        assertEquals(otp.getReceiver(), otpResponse.getReceiver());
+        assertEquals(otp.getReceiverTypeKey().getValue(), otpResponse.getReceiverTypeKey().getValue());
+        assertEquals(otp.getTypeKey(), otpResponse.getTypeKey());
+    }
+
+    @Test
+    @Transactional
     public void testCheckOneTimePasswordIncorrectOtp() throws Exception {
 
         //init DB
@@ -490,10 +511,10 @@ public class OneTimePasswordResourceIntTest {
     private OneTimePassword createOtp() {
         OneTimePassword oneTimePassword = new OneTimePassword();
         oneTimePassword.setPasswordHash(DigestUtils.sha256Hex(DEFAULT_OTP));
-        oneTimePassword.setEndDate( Instant.ofEpochMilli(Long.MAX_VALUE));
+        oneTimePassword.setEndDate(Instant.ofEpochMilli(Long.MAX_VALUE));
         oneTimePassword.setReceiver("receiver");
         oneTimePassword.setReceiverTypeKey(ReceiverTypeKey.IP);
-        oneTimePassword.setStartDate( Instant.ofEpochMilli(Long.MIN_VALUE));
+        oneTimePassword.setStartDate(Instant.ofEpochMilli(Long.MIN_VALUE));
         oneTimePassword.setTypeKey("TYPE1");
         oneTimePassword.setStateKey(StateKey.ACTIVE);
         oneTimePassword.setRetries(1);

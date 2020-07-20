@@ -23,6 +23,7 @@ import javax.validation.Valid;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static com.google.common.collect.ImmutableMap.of;
@@ -56,19 +57,36 @@ public class OneTimePasswordResource {
      * @param oneTimePasswordDto the oneTimePasswordDto to create
      * @return the ResponseEntity with status 201 (Created) and with body the new oneTimePasswordDto,
      * or with status 400 (Bad Request) if the oneTimePassword has already an ID
-     * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PreAuthorize("hasPermission({'oneTimePasswordDto': #oneTimePasswordDto} ,'OTP.ONETIMEPASSWORD.GENERATE')")
     @PostMapping("/one-time-password")
     @Timed
     @PrivilegeDescription("Privilege to create a new one time password")
     public ResponseEntity<OneTimePasswordDto> generateOneTimePassword(
-        @Valid @RequestBody OneTimePasswordDto oneTimePasswordDto) throws URISyntaxException {
+        @Valid @RequestBody OneTimePasswordDto oneTimePasswordDto) {
 
         log.debug("REST request to generate OneTimePassword : {}", oneTimePasswordDto);
 
         OneTimePasswordDto result = oneTimePasswordService.generate(oneTimePasswordDto);
         return ResponseEntity.ok(result);
+    }
+
+    /**
+     * GET  /one-time-password/{id} : retrieves existing one time password
+     *
+     * @param id one time password id
+     * @return the ResponseEntity with status 200 and one time password info,
+     * or with status 404 (Not Found) if the one time password is not found
+     */
+    @PreAuthorize("hasPermission(null, 'OTP.ONETIMEPASSWORD.GET')")
+    @GetMapping("/one-time-password/{id}")
+    @Timed
+    @PrivilegeDescription("Privilege to get an one time password information")
+    public OneTimePasswordDto getOneTimePassword(@PathVariable Long id) {
+        log.debug("received request to get oneTimePassword with id: {}", id);
+
+        return oneTimePasswordService.findOne(id)
+            .orElseThrow(() -> new NoSuchElementException("Could not find one time password for given id"));
     }
 
     /**
@@ -96,6 +114,7 @@ public class OneTimePasswordResource {
 
     /**
      * POST  /one-time-password/validate : Validate an existing oneTimePassword and redirect page.
+     *
      * @see OneTimePasswordResource#checkOneTimePassword(OneTimePasswordCheckDto)
      */
     @PreAuthorize("hasPermission({'oneTimePasswordCheckDto': #oneTimePasswordCheckDto} ,'OTP.ONETIMEPASSWORD.CHECK')")
@@ -107,13 +126,13 @@ public class OneTimePasswordResource {
         redirectUri = decodeUrl(redirectUri);
         checkOneTimePassword(oneTimePasswordCheckDto);
         OneTimePasswordDto dto = oneTimePasswordService.findOne(oneTimePasswordCheckDto.getId()).get();
-        String code =  uaaRepository.getOAuth2Token(of(RECEIVER, dto.getReceiver()));
+        String code = uaaRepository.getOAuth2Token(of(RECEIVER, dto.getReceiver()));
         return new RedirectView(new StringBuilder(redirectUri).append("?code=").append(code).toString(), true);
     }
 
     /**
-     *
      * POST /oauth/token  Convert  "code" parameter into "access_token" in order to satisfy OAuth protocol
+     *
      * @param code jwt token
      */
     @PostMapping("/oauth/token")
@@ -138,7 +157,7 @@ public class OneTimePasswordResource {
     }
 
     @SneakyThrows
-    private String decodeUrl(String url){
+    private String decodeUrl(String url) {
         return URLDecoder.decode(url, StandardCharsets.UTF_8.name());
     }
 
