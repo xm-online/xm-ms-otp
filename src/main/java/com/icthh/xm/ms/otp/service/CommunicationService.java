@@ -30,7 +30,7 @@ import static org.springframework.http.HttpMethod.POST;
 
 @Component
 @Slf4j
-@LepService(group = "service.communication", name = "communication")
+@LepService(group = "service.communication")
 public class CommunicationService {
 
     private static final String GRANT_TYPE = "grant_type";
