@@ -9,10 +9,7 @@ import com.icthh.xm.ms.otp.domain.TenantConfig;
 import com.icthh.xm.ms.otp.domain.UaaConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -71,7 +68,9 @@ public class CommunicationService {
 
         HttpEntity<MultiValueMap> request = new HttpEntity<>(map, headers);
         log.info("Post to {} with args {}", url, args);
-        return restTemplate.postForEntity(url, request, Map.class).getBody();
+        ResponseEntity<Map> mapResponseEntity = restTemplate.postForEntity(url, request, Map.class);
+        log.info("Post result. status {}, body {}", mapResponseEntity.getStatusCodeValue(), mapResponseEntity.getBody());
+        return mapResponseEntity.getBody();
     }
 
     protected String getSystemToken() {
