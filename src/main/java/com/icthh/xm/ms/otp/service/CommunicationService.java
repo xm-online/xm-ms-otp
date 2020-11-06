@@ -1,5 +1,7 @@
 package com.icthh.xm.ms.otp.service;
 
+import com.icthh.xm.commons.lep.LogicExtensionPoint;
+import com.icthh.xm.commons.lep.spring.LepService;
 import com.icthh.xm.commons.tenant.TenantContextHolder;
 import com.icthh.xm.commons.tenant.TenantKey;
 import com.icthh.xm.ms.otp.client.domain.CommunicationMessage;
@@ -28,6 +30,7 @@ import static org.springframework.http.HttpMethod.POST;
 
 @Component
 @Slf4j
+@LepService(group = "service")
 public class CommunicationService {
 
     private static final String GRANT_TYPE = "grant_type";
@@ -94,6 +97,7 @@ public class CommunicationService {
         return token;
     }
 
+    @LogicExtensionPoint(value = "SendOneTimePassword")
     public void sendOneTimePassword(String message, String receiver, String senderId) {
         TenantConfig tenantConfig = otpSpecService.getTenantConfig();
         if (tenantConfig == null) {
