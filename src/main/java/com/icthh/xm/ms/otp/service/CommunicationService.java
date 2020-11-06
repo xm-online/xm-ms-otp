@@ -42,7 +42,6 @@ public class CommunicationService {
     private final TenantContextHolder tenantContext;
     private final OtpSpecService otpSpecService;
 
-
     private final RestTemplate restTemplate;
 
     public CommunicationService(@Qualifier("loadBalancedRestTemplate") RestTemplate restTemplate,
