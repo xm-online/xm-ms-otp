@@ -4,66 +4,28 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 
 /**
  * A DTO for the OneTimePassword entity.
  */
+@Getter @Setter
+@ToString
 public class OneTimePasswordDto implements Serializable {
 
     private Long id;
-
     @NotNull
     private String receiver;
-
+    private String stateKey;
     @NotNull
     private ReceiverTypeKey receiverTypeKey;
-
     @NotNull
     private String typeKey;
-
     private String langKey;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(String receiver) {
-        this.receiver = receiver;
-    }
-
-    public ReceiverTypeKey getReceiverTypeKey() {
-        return receiverTypeKey;
-    }
-
-    public void setReceiverTypeKey(ReceiverTypeKey receiverTypeKey) {
-        this.receiverTypeKey = receiverTypeKey;
-    }
-
-    public String getTypeKey() {
-        return typeKey;
-    }
-
-    public void setTypeKey(String typeKey) {
-        this.typeKey = typeKey;
-    }
-
-    public String getLangKey() {
-        return langKey;
-    }
-
-    public void setLangKey(String langKey) {
-        this.langKey = langKey;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -86,14 +48,4 @@ public class OneTimePasswordDto implements Serializable {
         return Objects.hashCode(getId());
     }
 
-    @Override
-    public String toString() {
-        return "OneTimePasswordDto{" +
-            "id=" + getId() +
-            ", receiver='" + getReceiver() + "'" +
-            ", receiverTypeKey='" + getReceiverTypeKey() + "'" +
-            ", typeKey='" + getTypeKey() + "'" +
-            ", langKey='" + getLangKey() + "'" +
-            "}";
-    }
 }
