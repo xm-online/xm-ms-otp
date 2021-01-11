@@ -301,6 +301,7 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombok_version}"
     implementation "com.github.mifmif:generex:${generex_version}"
     implementation "org.freemarker:freemarker:${free_marker_version}"
+    implementation "org.codehaus.groovy.modules.http-builder:http-builder:${groovy_http_builder}"
 
     //XM dependencies
     implementation "com.icthh.xm.commons:xm-commons-security:${xm_commons_version}"
