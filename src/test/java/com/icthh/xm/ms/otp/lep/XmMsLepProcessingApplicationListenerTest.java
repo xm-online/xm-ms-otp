@@ -6,6 +6,7 @@ import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_KEY_SERVICES;
 import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_KEY_TEMPLATES;
 import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_SUB_KEY_PERMISSION_SERVICE;
 import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_SUB_KEY_SERVICE_TENANT_CONFIG_SERICE;
+import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_SUB_KEY_SPEC_SERVICE;
 import static com.icthh.xm.ms.otp.lep.LepMsConstants.BINDING_SUB_KEY_TEMPLATE_REST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -56,9 +57,10 @@ public class XmMsLepProcessingApplicationListenerTest {
         assertNotNull(context.getValue(BINDING_KEY_OTP_REPOSITORY, OneTimePasswordRepository.class));
 
         Map<String, Object> services = (HashMap<String, Object>)context.getValue(BINDING_KEY_SERVICES, HashMap.class);
-        assertEquals(services.values().size(), 2);
+        assertEquals(services.values().size(), 3);
         assertNotNull(services.get(BINDING_SUB_KEY_SERVICE_TENANT_CONFIG_SERICE));
         assertNotNull(services.get(BINDING_SUB_KEY_PERMISSION_SERVICE));
+        assertNotNull(services.get(BINDING_SUB_KEY_SPEC_SERVICE));
 
         Map<String, Object> templates = (HashMap<String, Object>)context.getValue(BINDING_KEY_TEMPLATES, HashMap.class);
         assertEquals(templates.values().size(), 1);
