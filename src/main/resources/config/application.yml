@@ -159,6 +159,7 @@ xm-config:
 # ===================================================================
 
 application:
+    timeline-ignored-http-methods:
     login-page: /config/tenants/{tenantName}/otp/one-time-password-login.htm
     kafka-enabled: true
     kafka-system-topic: system_topic
