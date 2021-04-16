@@ -130,6 +130,7 @@ xm-config:
     enabled: false
 
 application:
+    timeline-ignored-http-methods:
     kafka-system-topic: system_topic
     kafka-system-queue: system_queue
     tenant-ignored-path-list: /swagger-resources/configuration/ui, /management/health, /oauth/token_key, /h2-console

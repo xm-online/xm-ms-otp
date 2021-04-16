@@ -32,6 +32,7 @@ public class ApplicationProperties {
     private final Lep lep = new Lep();
 
     private List<String> tenantIgnoredPathList = Collections.emptyList();
+    private List<String> timelineIgnoredHttpMethods = Collections.emptyList();
 
     @Data
     private static class Retry {
