@@ -40,6 +40,7 @@ public final class HeaderUtil {
         HttpHeaders headers = new HttpHeaders();
         headers.add("X-" + APPLICATION_NAME + "-error", defaultMessage);
         headers.add("X-" + APPLICATION_NAME + "-params", entityName);
+        headers.add("X-" + APPLICATION_NAME + "-errorKey", errorKey);
         return headers;
     }
 }

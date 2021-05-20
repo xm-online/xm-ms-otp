@@ -16,8 +16,10 @@ public class HeaderUtilTest {
         assertNotNull(headers);
         assertNotNull(headers.get("X-otpApp-error"));
         assertNotNull(headers.get("X-otpApp-params"));
+        assertNotNull(headers.get("X-otpApp-errorKey"));
         assertEquals(((LinkedList<String>)headers.get("X-otpApp-error")).getFirst(), "default");
         assertEquals(((LinkedList<String>)headers.get("X-otpApp-params")).getFirst(), "entity");
+        assertEquals(((LinkedList<String>)headers.get("X-otpApp-errorKey")).getFirst(), "errorKey");
     }
 
     @Test
