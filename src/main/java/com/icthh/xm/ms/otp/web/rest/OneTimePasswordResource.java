@@ -104,7 +104,7 @@ public class OneTimePasswordResource {
     @PrivilegeDescription("Privilege to validate an existing oneTimePassword")
     public ResponseEntity<OneTimePasswordCheckDto> checkOneTimePassword(
         @Valid @RequestBody OneTimePasswordCheckDto oneTimePasswordCheckDto) throws URISyntaxException {
-        log.debug("REST request to update OneTimePassword : {}", oneTimePasswordCheckDto);
+        log.debug("REST request to check OneTimePassword : {}", oneTimePasswordCheckDto);
         if (oneTimePasswordCheckDto.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
