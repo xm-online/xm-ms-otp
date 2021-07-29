@@ -96,12 +96,17 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         oneTimePasswordRepository.saveAndFlush(otp);
 
         communicationService.sendOneTimePassword(message, otp.getReceiver(), otpType.getOtpSenderId());
-        return oneTimePasswordMapper.toDto(otp);
+
+        OneTimePasswordDto otpResult = oneTimePasswordMapper.toDto(otp);
+
+        otpResult.setLangKey(oneTimePasswordDto.getLangKey());
+
+        return otpResult;
     }
 
     protected String renderMessage(OtpSpec.OtpTypeSpec oneType,
-                                 String randomPasswrd,
-                                 String langKey) throws IOException, TemplateException {
+                                   String randomPasswrd,
+                                   String langKey) throws IOException, TemplateException {
         Map<String, Object> model = new HashMap<>();
         model.put(OTP, randomPasswrd);
         Configuration cfg = new Configuration(DEFAULT_FREMARKER_VERSION);
