@@ -91,9 +91,7 @@ public class CommunicationService {
             MediaType.APPLICATION_FORM_URLENCODED
         );
 
-        String token = response.get(TOKEN_TYPE) + " " + response.get(ACCESS_TOKEN);
-        log.info(token);
-        return token;
+        return response.get(TOKEN_TYPE) + " " + response.get(ACCESS_TOKEN);
     }
 
     @LogicExtensionPoint(value = "SendOneTimePassword")
