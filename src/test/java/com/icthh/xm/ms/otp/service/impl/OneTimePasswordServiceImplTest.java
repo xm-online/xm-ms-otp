@@ -14,15 +14,11 @@ import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
-import freemarker.template.TemplateException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
@@ -56,37 +52,45 @@ public class OneTimePasswordServiceImplTest {
     private static final String OTP_SENDER_ID = "Vodafone";
 
     @Test
-    public void testRenderMessage() throws IOException, TemplateException {
-        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", "EN");
+    public void testRenderMessage() {
+        OneTimePasswordDto oneTimePasswordDto = new OneTimePasswordDto();
+        oneTimePasswordDto.setLangKey("EN");
+        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", oneTimePasswordDto);
         assertEquals("Your otp password", result);
     }
 
     @Test
-    public void testRenderMessageWithEmptyLang() throws IOException, TemplateException {
+    public void testRenderMessageWithEmptyLang() {
         String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", null);
         assertEquals("Your otp password", result);
     }
 
     @Test
-    public void testRenderMissingLang() throws IOException, TemplateException {
-        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", "ZZZ");
+    public void testRenderMissingLang() {
+        OneTimePasswordDto oneTimePasswordDto = new OneTimePasswordDto();
+        oneTimePasswordDto.setLangKey("ZZZ");
+        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", oneTimePasswordDto);
         assertEquals("Your otp password", result);
     }
 
     @Test
-    public void testRenderMessageUa() throws IOException, TemplateException {
-        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", "UA");
+    public void testRenderMessageUa() {
+        OneTimePasswordDto oneTimePasswordDto = new OneTimePasswordDto();
+        oneTimePasswordDto.setLangKey("UA");
+        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", oneTimePasswordDto);
         assertEquals("Це ваш otp password", result);
     }
 
     @Test
-    public void testRenderMessageRu() throws IOException, TemplateException {
-        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", "RU");
+    public void testRenderMessageRu() {
+        OneTimePasswordDto oneTimePasswordDto = new OneTimePasswordDto();
+        oneTimePasswordDto.setLangKey("RU");
+        String result = oneTimePasswordService.renderMessage(generateOtpTypeSpec(), "password", oneTimePasswordDto);
         assertEquals("Это ваш otp password", result);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testRenderMessageEmptyMessage() throws IOException, TemplateException {
+    @Test(expected = IllegalArgumentException.class)
+    public void testRenderMessageEmptyMessage() {
         OtpSpec.OtpTypeSpec otpTypeSpec = generateOtpTypeSpec();
         otpTypeSpec.setMessage(null);
 
@@ -140,6 +144,7 @@ public class OneTimePasswordServiceImplTest {
             TYPE_KEY,
             "[ab]{4,6}c",
             ReceiverTypeKey.PHONE_NUMBER,
+            null,
             langMap,
             LENGTH,
             MAX_RETRIES,

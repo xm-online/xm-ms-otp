@@ -2,6 +2,8 @@ package com.icthh.xm.ms.otp.service;
 
 import static com.icthh.xm.commons.lep.XmLepConstants.THREAD_CONTEXT_KEY_AUTH_CONTEXT;
 import static com.icthh.xm.commons.lep.XmLepConstants.THREAD_CONTEXT_KEY_TENANT_CONTEXT;
+import static com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey.EMAIL;
+import static com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey.PHONE_NUMBER;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -116,7 +118,34 @@ public class CommunicationServiceTest {
 
         when(otpSpecService.getTenantConfig()).thenReturn(config);
         doReturn(responseEntity).when(restTemplate).postForEntity(anyString(), any(), any());
-        communicationService.sendOneTimePassword("message", "receiver", "sender");
+        communicationService.sendOneTimePassword("message", "receiver", "sender", PHONE_NUMBER);
+        verify(otpSpecService, times(2)).getTenantConfig();
+        verify(restTemplate, times(1)).postForEntity(anyString(), any(), any());
+        verify(restTemplate, times(1)).exchange(any(), eq(Object.class));
+    }
+
+    @Test
+    public void testSendOneTimePassword_shouldSendEmailRequest() {
+
+        UaaConfig uaa = new UaaConfig();
+        uaa.setSystemUsername("name");
+        uaa.setSystemPassword("pass");
+        uaa.setSystemAuthUrl("url");
+
+        CommunicationConfig communicationConfig = new CommunicationConfig();
+        communicationConfig.setUrl("http://test.url");
+
+        TenantConfig config = new TenantConfig();
+
+        config.setCommunication(communicationConfig);
+        config.setUaa(uaa);
+
+        Map<String, String> map = new HashMap<>();
+        ResponseEntity<Object> responseEntity = new ResponseEntity<>(map, HttpStatus.ACCEPTED);
+
+        when(otpSpecService.getTenantConfig()).thenReturn(config);
+        doReturn(responseEntity).when(restTemplate).postForEntity(anyString(), any(), any());
+        communicationService.sendOneTimePassword("email", "receiver", "sender", EMAIL);
         verify(otpSpecService, times(2)).getTenantConfig();
         verify(restTemplate, times(1)).postForEntity(anyString(), any(), any());
         verify(restTemplate, times(1)).exchange(any(), eq(Object.class));
@@ -125,7 +154,7 @@ public class CommunicationServiceTest {
     @Test(expected = IllegalStateException.class)
     public void testSendOneTimePasswordEmptyConfig() {
         when(otpSpecService.getTenantConfig()).thenReturn(null);
-        communicationService.sendOneTimePassword("message", "receiver", "sender");
+        communicationService.sendOneTimePassword("message", "receiver", "sender", PHONE_NUMBER);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -133,6 +162,6 @@ public class CommunicationServiceTest {
         TenantConfig config = new TenantConfig();
         config.setCommunication(null);
         when(otpSpecService.getTenantConfig()).thenReturn(config);
-        communicationService.sendOneTimePassword("message", "receiver", "sender");
+        communicationService.sendOneTimePassword("message", "receiver", "sender", PHONE_NUMBER);
     }
 }

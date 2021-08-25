@@ -7,8 +7,11 @@ import com.icthh.xm.commons.tenant.TenantKey;
 import com.icthh.xm.ms.otp.client.domain.CommunicationMessage;
 import com.icthh.xm.ms.otp.client.domain.Receiver;
 import com.icthh.xm.ms.otp.client.domain.Sender;
+import com.icthh.xm.ms.otp.config.ApplicationProperties;
 import com.icthh.xm.ms.otp.domain.TenantConfig;
 import com.icthh.xm.ms.otp.domain.UaaConfig;
+import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -21,7 +24,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -43,13 +45,16 @@ public class CommunicationService {
     private final OtpSpecService otpSpecService;
 
     private final RestTemplate restTemplate;
+    private final ApplicationProperties applicationProperties;
 
     public CommunicationService(@Qualifier("loadBalancedRestTemplate") RestTemplate restTemplate,
                                 TenantContextHolder tenantContext,
-                                OtpSpecService otpSpecService) {
+                                OtpSpecService otpSpecService,
+                                ApplicationProperties applicationProperties) {
         this.restTemplate = restTemplate;
         this.tenantContext = tenantContext;
         this.otpSpecService = otpSpecService;
+        this.applicationProperties = applicationProperties;
     }
 
     protected Map post(String url,
@@ -95,7 +100,7 @@ public class CommunicationService {
     }
 
     @LogicExtensionPoint(value = "SendOneTimePassword")
-    public void sendOneTimePassword(String message, String receiver, String senderId) {
+    public void sendOneTimePassword(String message, String receiver, String senderId, ReceiverTypeKey receiverTypeKey) {
         TenantConfig tenantConfig = otpSpecService.getTenantConfig();
         if (tenantConfig == null) {
             throw new IllegalStateException("Can't send message, because tenant config is null");
@@ -109,12 +114,12 @@ public class CommunicationService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         String url = tenantConfig.getCommunication().getUrl() + "/communicationMessage/send";
 
+        String type = applicationProperties.getCommunication().getMessageTypes().getOrDefault(receiverTypeKey, SMS);
         CommunicationMessage body = new CommunicationMessage();
         body.setContent(message)
-            .setType(SMS)
+            .setType(type)
             .setSender(new Sender(senderId))
-            .setReceiver(new ArrayList<>())
-            .getReceiver().add(new Receiver(receiver, receiver));
+            .setReceiver(List.of(Receiver.fromReceiverType(receiverTypeKey, receiver)));
         RequestEntity<Object> request = new RequestEntity<>(body, headers, POST, URI.create(url));
         restTemplate.exchange(request, Object.class);
     }

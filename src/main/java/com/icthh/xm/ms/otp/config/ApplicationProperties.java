@@ -1,6 +1,9 @@
 package com.icthh.xm.ms.otp.config;
 
 import com.icthh.xm.commons.lep.TenantScriptStorage;
+import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+import io.github.jhipster.config.JHipsterProperties;
+import java.util.Map;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +16,7 @@ import java.util.List;
  * Properties specific to Otp.
  * <p>
  * Properties are configured in the application.yml file.
- * See {@link io.github.jhipster.config.JHipsterProperties} for a good example.
+ * See {@link JHipsterProperties} for a good example.
  */
 @Getter
 @Setter
@@ -25,9 +28,11 @@ public class ApplicationProperties {
     private boolean timelinesEnabled;
     private String specPath;
     private String tenantPath;
+    private String emailPathPattern;
     private String dbSchemaSuffix;
     private String loginPage;
     private final Retry retry = new Retry();
+    private final Communication communication = new Communication();
 
     private final Lep lep = new Lep();
 
@@ -48,4 +53,8 @@ public class ApplicationProperties {
         private String lepResourcePathPattern;
     }
 
+    @Data
+    public static class Communication {
+        private Map<ReceiverTypeKey, String> messageTypes = Collections.emptyMap();
+    }
 }
