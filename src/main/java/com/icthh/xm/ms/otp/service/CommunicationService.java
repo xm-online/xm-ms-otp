@@ -1,14 +1,23 @@
 package com.icthh.xm.ms.otp.service;
 
+import static java.util.Optional.ofNullable;
+import static org.springframework.http.HttpMethod.POST;
+
 import com.icthh.xm.commons.lep.LogicExtensionPoint;
 import com.icthh.xm.commons.lep.spring.LepService;
 import com.icthh.xm.commons.tenant.TenantContextHolder;
 import com.icthh.xm.commons.tenant.TenantKey;
 import com.icthh.xm.ms.otp.client.domain.CommunicationMessage;
-import com.icthh.xm.ms.otp.client.domain.Receiver;
-import com.icthh.xm.ms.otp.client.domain.Sender;
+import com.icthh.xm.ms.otp.domain.OtpSpec.OtpTypeSpec;
 import com.icthh.xm.ms.otp.domain.TenantConfig;
 import com.icthh.xm.ms.otp.domain.UaaConfig;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
+import com.icthh.xm.ms.otp.service.impl.CommunicationMessageStrategyFactory;
+import com.icthh.xm.ms.otp.service.impl.CommunicationRequestStrategy;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -19,14 +28,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import static org.springframework.http.HttpMethod.POST;
 
 @Component
 @Slf4j
@@ -43,13 +44,16 @@ public class CommunicationService {
     private final OtpSpecService otpSpecService;
 
     private final RestTemplate restTemplate;
+    private final CommunicationMessageStrategyFactory messageRenderingFactory;
 
     public CommunicationService(@Qualifier("loadBalancedRestTemplate") RestTemplate restTemplate,
                                 TenantContextHolder tenantContext,
-                                OtpSpecService otpSpecService) {
+                                OtpSpecService otpSpecService,
+                                CommunicationMessageStrategyFactory messageRenderingFactory) {
         this.restTemplate = restTemplate;
         this.tenantContext = tenantContext;
         this.otpSpecService = otpSpecService;
+        this.messageRenderingFactory = messageRenderingFactory;
     }
 
     protected Map post(String url,
@@ -95,7 +99,7 @@ public class CommunicationService {
     }
 
     @LogicExtensionPoint(value = "SendOneTimePassword")
-    public void sendOneTimePassword(String message, String receiver, String senderId) {
+    public void sendOneTimePassword(String otp, OtpTypeSpec otpTypeSpec, OneTimePasswordDto otpDto) {
         TenantConfig tenantConfig = otpSpecService.getTenantConfig();
         if (tenantConfig == null) {
             throw new IllegalStateException("Can't send message, because tenant config is null");
@@ -109,14 +113,19 @@ public class CommunicationService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         String url = tenantConfig.getCommunication().getUrl() + "/communicationMessage/send";
 
-        CommunicationMessage body = new CommunicationMessage();
-        body.setContent(message)
-            .setType(SMS)
-            .setSender(new Sender(senderId))
-            .setReceiver(new ArrayList<>())
-            .getReceiver().add(new Receiver(receiver, receiver));
+        CommunicationMessage body = createRequest(otp, otpTypeSpec, otpDto);
+
         RequestEntity<Object> request = new RequestEntity<>(body, headers, POST, URI.create(url));
         restTemplate.exchange(request, Object.class);
     }
 
+    private CommunicationMessage createRequest(String otp, OtpTypeSpec otpTypeSpec, OneTimePasswordDto otpDto) {
+        String langKey = otpDto.getLangKey();
+        CommunicationRequestStrategy strategy =
+            ofNullable(messageRenderingFactory.resolveStrategy(otpTypeSpec, langKey))
+            .orElseThrow(() -> new IllegalArgumentException("Failed to resolve communication strategy for " +
+                "spec: " + otpTypeSpec + " and langKey: '" + langKey + "'"));
+
+        return strategy.prepareRequest(otp, otpTypeSpec, otpDto);
+    }
 }

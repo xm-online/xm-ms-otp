@@ -19,6 +19,7 @@ public class OtpSpec {
         private String key;
         private String pattern;
         private ReceiverTypeKey receiverTypeKey;
+        private String messageTemplate;
         private SortedMap<String, String> message;
         private Integer length;
         private Integer maxRetries;
