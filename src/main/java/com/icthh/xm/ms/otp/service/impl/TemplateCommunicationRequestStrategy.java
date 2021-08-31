@@ -37,7 +37,7 @@ public class TemplateCommunicationRequestStrategy implements CommunicationReques
             .setContent(otpTypeSpec.getMessageTemplate())
             .setSender(new Sender(otpTypeSpec.getOtpSenderId()))
             .setReceiver(List.of(emailReceiver(otpDto.getReceiver())))
-            .setCharacteristics(characteristics);
+            .setCharacteristic(characteristics);
         return communicationMessage;
     }
 

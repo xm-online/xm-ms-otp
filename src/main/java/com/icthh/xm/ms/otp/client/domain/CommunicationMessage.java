@@ -16,7 +16,7 @@ public class CommunicationMessage {
     private String type;
     private Sender sender;
 
-    private List<CommunicationMessageCharacteristic> characteristics;
+    private List<CommunicationMessageCharacteristic> characteristic;
 
     @Data
     @NoArgsConstructor

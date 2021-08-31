@@ -59,12 +59,12 @@ public class TemplateCommunicationRequestStrategyTest {
             oneTimePasswordDto
         );
 
-        assertNull("content must be null", result.getContent());
+        assertEquals(MESSAGE_TEMPLATE, result.getContent());
         assertEquals("TemplatedEmail", result.getType());
         assertEquals(otpTypeSpec.getOtpSenderId(), result.getSender().getId());
         assertEquals(oneTimePasswordDto.getReceiver(), result.getReceiver().get(0).getEmail());
 
-        List<CommunicationMessageCharacteristic> characteristics = result.getCharacteristics();
+        List<CommunicationMessageCharacteristic> characteristics = result.getCharacteristic();
         assertThat(characteristics, hasSize(4));
         assertThat(characteristics, containsInAnyOrder(
             new CommunicationMessageCharacteristic("otp", PASSWORD),
