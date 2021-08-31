@@ -85,16 +85,21 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     }
 
     private OneTimePassword getOneTimePassword(OneTimePasswordDto oneTimePasswordDto,
-                                               OtpTypeSpec oneType,
-                                               String randomPasswrd) {
-        String sha256hex = DigestUtils.sha256Hex(randomPasswrd);
+                                               OtpTypeSpec otpTypeSpec,
+                                               String randomPassword) {
+        String sha256hex = DigestUtils.sha256Hex(randomPassword);
         Instant startDate = Instant.now();
-        Instant endDate = startDate.plusSeconds(oneType.getTtl());
+        Integer ttl = otpTypeSpec.getTtl();
+        if (ttl == null) {
+            log.error("getOneTimePassword: for spec: {} ttl is null", otpTypeSpec);
+            throw new IllegalStateException("Invalid specification config for type: " + otpTypeSpec.getKey());
+        }
+        Instant endDate = startDate.plusSeconds(ttl);
         return OneTimePassword.builder()
             .startDate(startDate)
             .endDate(endDate)
-            .receiverTypeKey(oneType.getReceiverTypeKey())
-            .receiverTypeKey(oneType.getReceiverTypeKey())
+            .receiverTypeKey(otpTypeSpec.getReceiverTypeKey())
+            .receiverTypeKey(otpTypeSpec.getReceiverTypeKey())
             .retries(BigInteger.ZERO.intValue())
             .typeKey(oneTimePasswordDto.getTypeKey())
             .receiver(oneTimePasswordDto.getReceiver())

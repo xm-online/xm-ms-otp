@@ -124,7 +124,7 @@ public class CommunicationService {
         CommunicationRequestStrategy strategy =
             ofNullable(messageRenderingFactory.resolveStrategy(otpTypeSpec, langKey))
             .orElseThrow(() -> new IllegalArgumentException("Failed to resolve communication strategy for " +
-                "spec: " + otpTypeSpec + " and langKey: '" + langKey + "'"));
+                "spec: " + otpTypeSpec.getKey() + " and langKey: '" + langKey + "'"));
 
         return strategy.prepareRequest(otp, otpTypeSpec, otpDto);
     }
