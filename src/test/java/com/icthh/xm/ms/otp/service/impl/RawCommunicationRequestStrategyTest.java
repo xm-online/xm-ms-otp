@@ -124,12 +124,13 @@ public class RawCommunicationRequestStrategyTest {
             TYPE_KEY,
             "[ab]{4,6}c",
             ReceiverTypeKey.PHONE_NUMBER,
-            null,
             langMap,
             LENGTH,
             MAX_RETRIES,
             TTL,
-            OTP_SENDER_ID
+            OTP_SENDER_ID,
+            null,
+            null
         );
     }
 }

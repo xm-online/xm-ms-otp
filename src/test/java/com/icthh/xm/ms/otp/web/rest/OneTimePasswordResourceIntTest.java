@@ -49,6 +49,7 @@ import java.math.BigInteger;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -170,8 +171,6 @@ public class OneTimePasswordResourceIntTest {
     @Before
     public void setup() {
         TenantContextUtils.setTenant(tenantContextHolder, "XM");
-//        tenantTemplateService.onRefresh("/config/tenants/XM/otp/emails/en/test-email-template.ftl", "Greetings! MSISDN: ${msisdn}, OTP: ${otp}");
-
 
         MockitoAnnotations.initMocks(this);
         OneTimePasswordServiceImpl oneTimePasswordService = getOneTimePasswordService();
@@ -187,8 +186,8 @@ public class OneTimePasswordResourceIntTest {
         OtpSpecService otpSpecService = new OtpSpecService(applicationProperties);
         OtpSpec otpSpec = new OtpSpec();
         otpSpec.setTypes(List.of(
-            getOtpTypeSpec(PHONE_NUMBER_TYPE_KEY, ReceiverTypeKey.PHONE_NUMBER, null),
-            getOtpTypeSpec(EMAIL_TYPE_KEY, EMAIL, "test-email-template")
+            getOtpTypeSpec(PHONE_NUMBER_TYPE_KEY, ReceiverTypeKey.PHONE_NUMBER, null, Collections.emptyList()),
+            getOtpTypeSpec(EMAIL_TYPE_KEY, EMAIL, "test-email-template", List.of("msisdn"))
         ));
         otpSpecService.setOtpSpec(otpSpec);
         return new OneTimePasswordServiceImpl(
@@ -200,7 +199,10 @@ public class OneTimePasswordResourceIntTest {
     }
 
     @NotNull
-    private OtpTypeSpec getOtpTypeSpec(String typeKey, ReceiverTypeKey receiverTypeKey, String template) {
+    private OtpTypeSpec getOtpTypeSpec(String typeKey,
+                                       ReceiverTypeKey receiverTypeKey,
+                                       String template,
+                                       List<String> modelKeys) {
         SortedMap<String, String> langMap = new TreeMap<>();
         langMap.put("EN", "Your otp ${otp}");
         langMap.put("UA", "Ваш otp ${otp}");
@@ -210,12 +212,13 @@ public class OneTimePasswordResourceIntTest {
             typeKey,
             "[ab]{4,6}c",
             receiverTypeKey,
-            template,
             langMap,
             LENGTH,
             MAX_RETRIES,
             TTL,
-            OTP_SENDER_ID
+            OTP_SENDER_ID,
+            template,
+            modelKeys
         );
     }
 

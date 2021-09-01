@@ -7,11 +7,13 @@ import com.icthh.xm.ms.otp.client.domain.CommunicationMessage.CommunicationMessa
 import com.icthh.xm.ms.otp.client.domain.Sender;
 import com.icthh.xm.ms.otp.domain.OtpSpec.OtpTypeSpec;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -48,20 +50,23 @@ public class TemplateCommunicationRequestStrategy implements CommunicationReques
     private List<CommunicationMessageCharacteristic> toCharacteristicList(String otp,
                                                                           OtpTypeSpec otpTypeSpec,
                                                                           OneTimePasswordDto otpDto) {
-        Map<String, Object> modelParams = otpDto.getModel();
-        List<CommunicationMessageCharacteristic> modelCharacteristics = otpTypeSpec.getTemplateModelKeys().stream()
-            .filter(modelParams::containsKey)
-            .map(modelKey -> new CommunicationMessageCharacteristic(modelKey, String.valueOf(modelParams.get(modelKey))))
-            .collect(Collectors.toList());
 
-        List<CommunicationMessageCharacteristic> characteristics = List.of(
+        List<CommunicationMessageCharacteristic> defaultCharacteristics = List.of(
             new CommunicationMessageCharacteristic(OTP_MODEL_KEY, otp),
             new CommunicationMessageCharacteristic(TEMPLATE_NAME, otpTypeSpec.getMessageTemplate()),
             new CommunicationMessageCharacteristic(LANGUAGE_MODEL_KEY, otpDto.getLangKey())
         );
+        List<CommunicationMessageCharacteristic> result = new ArrayList<>(defaultCharacteristics);
 
-        modelCharacteristics.addAll(characteristics);
+        Map<String, Object> modelParams = otpDto.getModel();
+        if (MapUtils.isNotEmpty(modelParams)) {
+            List<CommunicationMessageCharacteristic> modelCharacteristics = otpTypeSpec.getTemplateModelKeys().stream()
+                .filter(modelParams::containsKey)
+                .map(modelKey -> new CommunicationMessageCharacteristic(modelKey, String.valueOf(modelParams.get(modelKey))))
+                .collect(Collectors.toList());
+            result.addAll(modelCharacteristics);
+        }
 
-        return modelCharacteristics;
+        return result;
     }
 }

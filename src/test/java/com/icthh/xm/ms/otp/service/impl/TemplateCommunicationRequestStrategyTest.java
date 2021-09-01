@@ -16,6 +16,7 @@ import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
 import com.icthh.xm.ms.otp.domain.OtpSpec.OtpTypeSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
+import java.util.HashMap;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -48,9 +49,17 @@ public class TemplateCommunicationRequestStrategyTest {
 
     @Test
     public void testPrepareRequest() {
+        String receiver = "email receiver";
+        String msisdnReceiver = "msisdn receiver";
+
+        HashMap<String, Object> model = new HashMap<>();
+        model.put("msisdn", msisdnReceiver);
+
         OneTimePasswordDto oneTimePasswordDto = new OneTimePasswordDto();
+        oneTimePasswordDto.setModel(model);
         oneTimePasswordDto.setLangKey("EN");
-        oneTimePasswordDto.setReceiver("receiver");
+        oneTimePasswordDto.setReceiver(receiver);
+
         OtpTypeSpec otpTypeSpec = generateOtpTypeSpec();
 
         CommunicationMessage result = requestStrategy.prepareRequest(
@@ -70,7 +79,7 @@ public class TemplateCommunicationRequestStrategyTest {
             new CommunicationMessageCharacteristic("otp", PASSWORD),
             new CommunicationMessageCharacteristic("language", "EN"),
             new CommunicationMessageCharacteristic("templateName", MESSAGE_TEMPLATE),
-            new CommunicationMessageCharacteristic("msisdn", oneTimePasswordDto.getReceiver())
+            new CommunicationMessageCharacteristic("msisdn", msisdnReceiver)
         ));
     }
 
@@ -88,12 +97,13 @@ public class TemplateCommunicationRequestStrategyTest {
             TYPE_KEY,
             "[ab]{4,6}c",
             ReceiverTypeKey.EMAIL,
-            MESSAGE_TEMPLATE,
             null,
             LENGTH,
             MAX_RETRIES,
             TTL,
-            OTP_SENDER_ID
+            OTP_SENDER_ID,
+            MESSAGE_TEMPLATE,
+            List.of("msisdn")
         );
     }
 }
