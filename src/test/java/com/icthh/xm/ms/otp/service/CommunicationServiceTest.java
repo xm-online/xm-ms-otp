@@ -2,6 +2,8 @@ package com.icthh.xm.ms.otp.service;
 
 import static com.icthh.xm.commons.lep.XmLepConstants.THREAD_CONTEXT_KEY_AUTH_CONTEXT;
 import static com.icthh.xm.commons.lep.XmLepConstants.THREAD_CONTEXT_KEY_TENANT_CONTEXT;
+import static com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey.EMAIL;
+import static com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey.PHONE_NUMBER;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -20,13 +22,23 @@ import com.icthh.xm.ms.otp.config.LepConfiguration;
 import com.icthh.xm.ms.otp.config.SecurityBeanOverrideConfiguration;
 import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
 import com.icthh.xm.ms.otp.domain.CommunicationConfig;
+import com.icthh.xm.ms.otp.domain.OtpSpec;
 import com.icthh.xm.ms.otp.domain.TenantConfig;
 import com.icthh.xm.ms.otp.domain.UaaConfig;
 
+import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -116,7 +128,61 @@ public class CommunicationServiceTest {
 
         when(otpSpecService.getTenantConfig()).thenReturn(config);
         doReturn(responseEntity).when(restTemplate).postForEntity(anyString(), any(), any());
-        communicationService.sendOneTimePassword("message", "receiver", "sender");
+
+        OtpSpec.OtpTypeSpec otpTypeSpec = getOtpTypeSpec("sender", PHONE_NUMBER, "message");
+        OneTimePasswordDto oneTimePasswordDto = getOneTimePasswordDto("receiver");
+
+        communicationService.sendOneTimePassword("OTP", otpTypeSpec, oneTimePasswordDto);
+        verify(otpSpecService, times(2)).getTenantConfig();
+        verify(restTemplate, times(1)).postForEntity(anyString(), any(), any());
+        verify(restTemplate, times(1)).exchange(any(), eq(Object.class));
+    }
+
+    @NotNull
+    private OneTimePasswordDto getOneTimePasswordDto(String receiver) {
+        OneTimePasswordDto oneTimePasswordDto = new OneTimePasswordDto();
+        oneTimePasswordDto.setReceiver(receiver);
+        return oneTimePasswordDto;
+    }
+
+    @NotNull
+    private OtpSpec.OtpTypeSpec getOtpTypeSpec(String sender, ReceiverTypeKey receiverTypeKey, String message) {
+        OtpSpec.OtpTypeSpec otpTypeSpec = new OtpSpec.OtpTypeSpec();
+        otpTypeSpec.setOtpSenderId(sender);
+        otpTypeSpec.setReceiverTypeKey(receiverTypeKey);
+
+        TreeMap<String, String> messageMap = new TreeMap<>();
+        messageMap.put("en", message);
+        otpTypeSpec.setMessage(messageMap);
+        return otpTypeSpec;
+    }
+
+    @Test
+    public void testSendOneTimePassword_shouldSendEmailRequest() {
+
+        UaaConfig uaa = new UaaConfig();
+        uaa.setSystemUsername("name");
+        uaa.setSystemPassword("pass");
+        uaa.setSystemAuthUrl("url");
+
+        CommunicationConfig communicationConfig = new CommunicationConfig();
+        communicationConfig.setUrl("http://test.url");
+
+        TenantConfig config = new TenantConfig();
+
+        config.setCommunication(communicationConfig);
+        config.setUaa(uaa);
+
+        Map<String, String> map = new HashMap<>();
+        ResponseEntity<Object> responseEntity = new ResponseEntity<>(map, HttpStatus.ACCEPTED);
+
+        when(otpSpecService.getTenantConfig()).thenReturn(config);
+        doReturn(responseEntity).when(restTemplate).postForEntity(anyString(), any(), any());
+
+        OtpSpec.OtpTypeSpec otpTypeSpec = getOtpTypeSpec("sender", EMAIL, "message");
+        OneTimePasswordDto oneTimePasswordDto = getOneTimePasswordDto("receiver");
+
+        communicationService.sendOneTimePassword("OTP", otpTypeSpec, oneTimePasswordDto);
         verify(otpSpecService, times(2)).getTenantConfig();
         verify(restTemplate, times(1)).postForEntity(anyString(), any(), any());
         verify(restTemplate, times(1)).exchange(any(), eq(Object.class));
@@ -125,7 +191,10 @@ public class CommunicationServiceTest {
     @Test(expected = IllegalStateException.class)
     public void testSendOneTimePasswordEmptyConfig() {
         when(otpSpecService.getTenantConfig()).thenReturn(null);
-        communicationService.sendOneTimePassword("message", "receiver", "sender");
+        OtpSpec.OtpTypeSpec otpTypeSpec = getOtpTypeSpec("sender", PHONE_NUMBER, null);
+        OneTimePasswordDto oneTimePasswordDto = getOneTimePasswordDto("receiver");
+
+        communicationService.sendOneTimePassword("OTP", otpTypeSpec, oneTimePasswordDto);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -133,6 +202,8 @@ public class CommunicationServiceTest {
         TenantConfig config = new TenantConfig();
         config.setCommunication(null);
         when(otpSpecService.getTenantConfig()).thenReturn(config);
-        communicationService.sendOneTimePassword("message", "receiver", "sender");
+        OtpSpec.OtpTypeSpec otpTypeSpec = getOtpTypeSpec("sender", PHONE_NUMBER, "message");
+        OneTimePasswordDto oneTimePasswordDto = getOneTimePasswordDto("receiver");
+        communicationService.sendOneTimePassword("OTP", otpTypeSpec, oneTimePasswordDto);
     }
 }

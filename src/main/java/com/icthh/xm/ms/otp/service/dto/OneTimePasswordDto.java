@@ -1,6 +1,7 @@
 package com.icthh.xm.ms.otp.service.dto;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
 
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
@@ -26,6 +27,7 @@ public class OneTimePasswordDto implements Serializable {
     @NotNull
     private String typeKey;
     private String langKey;
+    private Map<String, Object> model;
 
     @Override
     public boolean equals(Object o) {
