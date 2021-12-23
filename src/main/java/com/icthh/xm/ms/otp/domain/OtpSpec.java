@@ -42,5 +42,29 @@ public class OtpSpec {
          * in request to communication.
          */
         private List<String> templateModelKeys;
+
+        /**
+         * Specification generation limit.
+         */
+        private GenerationLimit generationLimit;
+    }
+
+    /**
+     * Specification generation limit.
+     *
+     * Used to limit how many times specification can be used by a given subscriber.
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GenerationLimit {
+        /**
+         * Period in seconds during which limit is applied.
+         */
+        private Integer periodSeconds;
+        /**
+         * Invocation limit value
+         */
+        private Integer value;
     }
 }

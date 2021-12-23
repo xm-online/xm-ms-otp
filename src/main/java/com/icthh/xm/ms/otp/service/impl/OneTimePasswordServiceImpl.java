@@ -3,6 +3,8 @@ package com.icthh.xm.ms.otp.service.impl;
 import com.icthh.xm.commons.lep.LogicExtensionPoint;
 import com.icthh.xm.commons.lep.spring.LepService;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
+import com.icthh.xm.ms.otp.domain.OtpSpec;
+import com.icthh.xm.ms.otp.domain.OtpSpec.GenerationLimit;
 import com.icthh.xm.ms.otp.domain.OtpSpec.OtpTypeSpec;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.lep.keyresolver.OtpTypeKeyResolver;
@@ -15,12 +17,14 @@ import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
 import com.mifmif.common.regex.Generex;
+
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +72,9 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         log.debug("Request to generate OneTimePassword : {}", oneTimePasswordDto);
         OtpTypeSpec otpType = otpSpecService.getOtpTypeSpec(oneTimePasswordDto.getTypeKey());
 
+        //validate specification limit
+        validateGenerationLimit(otpType, oneTimePasswordDto.getReceiver());
+
         //generate otp
         Generex generex = new Generex(otpType.getPattern());
         String randomPassword = generex.random();
@@ -82,6 +89,51 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         otpResult.setLangKey(oneTimePasswordDto.getLangKey());
 
         return otpResult;
+    }
+
+    private void validateGenerationLimit(OtpTypeSpec otpType, String receiver) {
+        GenerationLimit generationLimit = otpType.getGenerationLimit();
+        if (isValidSpecLimit(generationLimit, otpType.getKey())) {
+            log.info("validateGenerationLimit: going to check generation limit: {}", generationLimit);
+
+            Integer periodSeconds = generationLimit.getPeriodSeconds();
+            Integer limitValue = generationLimit.getValue();
+
+            Instant startDate = Instant.now().minusSeconds(periodSeconds);
+            List<OneTimePassword> otpsForPeriod = oneTimePasswordRepository
+                .findAllByReceiverAndTypeKeyAndStartDateGreaterThanEqual(
+                    receiver,
+                    otpType.getKey(),
+                    startDate
+                );
+
+            List<OneTimePassword> currentOpenOTPs = otpsForPeriod.stream()
+                .filter(otp -> StateKey.VERIFIED != otp.getStateKey())
+                .collect(Collectors.toList());
+
+            if (currentOpenOTPs.size() >= limitValue) {
+                log.error("validateGenerationLimit: generation limit reached for receiver: {}", receiver);
+                throw new OtpInvalidPasswordException();
+            }
+        } else {
+            log.warn("validateGenerationLimit: skipping invalid limit config for spec: {}", otpType.getKey());
+        }
+    }
+
+    private boolean isValidSpecLimit(GenerationLimit generationLimit, String otpSpecKey) {
+        if (generationLimit == null) {
+            log.debug("isValidSpecLimit: no limit configured for spec: {}", otpSpecKey);
+            return false;
+        }
+        Integer periodSeconds = generationLimit.getPeriodSeconds();
+        Integer limitValue = generationLimit.getValue();
+
+        if (periodSeconds < 0 || limitValue < 0) {
+            log.warn("isValidSpecLimit: spec: {} has invalid limit configuration: {}", otpSpecKey, generationLimit);
+            return false;
+        }
+
+        return true;
     }
 
     private OneTimePassword getOneTimePassword(OneTimePasswordDto oneTimePasswordDto,
@@ -114,6 +166,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         OneTimePassword otp = oneTimePasswordRepository.findById(oneTimePasswordCheckDto.getId())
             .orElseThrow(OtpInvalidPasswordException::new);
 
+        // todo
         if (checkOtpState(otp)
             || checkOtpDate(otp)
             || checkOtpRetries(otp)

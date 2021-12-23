@@ -20,7 +20,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @Slf4j
 @RunWith(SpringRunner.class)
-//@WithMockUser(authorities = {"SUPER-ADMIN"})
 @SpringBootTest(classes = {
     SecurityBeanOverrideConfiguration.class,
     OtpApp.class,
@@ -129,6 +128,7 @@ public class RawCommunicationRequestStrategyTest {
             MAX_RETRIES,
             TTL,
             OTP_SENDER_ID,
+            null,
             null,
             null
         );
