@@ -1,7 +1,7 @@
 package com.icthh.xm.ms.otp.repository;
 
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
-
+import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -28,7 +28,8 @@ public interface OneTimePasswordRepository extends JpaRepository<OneTimePassword
      */
     OneTimePassword findTopByReceiverOrderByStartDateDesc(String receiver);
 
-    List<OneTimePassword> findAllByReceiverAndTypeKeyAndStartDateGreaterThanEqual(String receiver,
+    Integer countAllByReceiverAndTypeKeyAndStateKeyInAndStartDateGreaterThanEqual(String receiver,
                                                                                   String typeKey,
+                                                                                  List<StateKey> stateKey,
                                                                                   Instant startDate);
 }

@@ -2,6 +2,7 @@ package com.icthh.xm.ms.otp.web.rest;
 
 import static com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey.EMAIL;
 import static com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey.PHONE_NUMBER;
+import static com.icthh.xm.ms.otp.service.dto.LimitValidationType.DB;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
@@ -38,6 +39,7 @@ import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.CommunicationService;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
+import com.icthh.xm.ms.otp.service.SpecLimitValidationService;
 import com.icthh.xm.ms.otp.service.UaaService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
@@ -154,6 +156,9 @@ public class OneTimePasswordResourceIntTest {
     @Spy
     CommunicationService communicationService = new CommunicationServiceMock();
 
+    @Autowired
+    private SpecLimitValidationService specValidationService;
+
     private class CommunicationServiceMock extends CommunicationService {
         public CommunicationServiceMock() {
             super(null, null, null, messageRenderingFactory);
@@ -191,15 +196,16 @@ public class OneTimePasswordResourceIntTest {
         otpSpec.setTypes(List.of(
             getOtpTypeSpec(PHONE_NUMBER_TYPE_KEY, PHONE_NUMBER, null, emptyList(), null),
             getOtpTypeSpec(EMAIL_TYPE_KEY, EMAIL, "test-email-template", List.of("msisdn"), null),
-            getOtpTypeSpec(INVALID_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(-1, -1)),
-            getOtpTypeSpec(VALID_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(1800, 1))
+            getOtpTypeSpec(INVALID_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(DB, -1, -1)),
+            getOtpTypeSpec(VALID_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(DB, 1800, 1))
         ));
         otpSpecService.setOtpSpec(otpSpec);
         return new OneTimePasswordServiceImpl(
+            otpSpecService,
             oneTimePasswordRepository,
             oneTimePasswordMapper,
-            otpSpecService,
-            communicationService
+            communicationService,
+            specValidationService
         );
     }
 

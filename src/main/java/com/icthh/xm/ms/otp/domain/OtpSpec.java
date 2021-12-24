@@ -2,6 +2,7 @@ package com.icthh.xm.ms.otp.domain;
 
 import com.icthh.xm.ms.otp.client.domain.CommunicationMessage.CommunicationMessageCharacteristic;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
+import com.icthh.xm.ms.otp.service.dto.LimitValidationType;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,14 +30,14 @@ public class OtpSpec {
 
         /**
          * Message Template.
-         *
+         * <p>
          * Represent a path to a file stored in tenant config repository.
          */
         private String messageTemplate;
 
         /**
          * Available template model keys.
-         *
+         * <p>
          * Values for configured model keys will be looked up in
          * {@link OneTimePasswordDto#getModel()} and passed as {@link CommunicationMessageCharacteristic}
          * in request to communication.
@@ -51,13 +52,18 @@ public class OtpSpec {
 
     /**
      * Specification generation limit.
-     *
+     * <p>
      * Used to limit how many times specification can be used by a given subscriber.
      */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class GenerationLimit {
+
+        /**
+         * Specification validation type
+         */
+        private LimitValidationType validationType;
         /**
          * Period in seconds during which limit is applied.
          */
