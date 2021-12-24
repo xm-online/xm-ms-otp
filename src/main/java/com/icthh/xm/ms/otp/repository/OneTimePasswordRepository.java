@@ -1,9 +1,12 @@
 package com.icthh.xm.ms.otp.repository;
 
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
-
+import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.time.Instant;
+import java.util.List;
 
 
 /**
@@ -24,4 +27,9 @@ public interface OneTimePasswordRepository extends JpaRepository<OneTimePassword
      * @return OTP with newest start date
      */
     OneTimePassword findTopByReceiverOrderByStartDateDesc(String receiver);
+
+    Integer countAllByReceiverAndTypeKeyAndStateKeyInAndStartDateGreaterThanEqual(String receiver,
+                                                                                  String typeKey,
+                                                                                  List<StateKey> stateKey,
+                                                                                  Instant startDate);
 }

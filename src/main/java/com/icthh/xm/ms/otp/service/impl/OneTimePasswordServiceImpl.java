@@ -10,17 +10,12 @@ import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.CommunicationService;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
 import com.icthh.xm.ms.otp.service.OtpSpecService;
+import com.icthh.xm.ms.otp.service.SpecLimitValidationService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
 import com.mifmif.common.regex.Generex;
-import java.math.BigInteger;
-import java.time.Instant;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -28,12 +23,20 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
+import java.time.Instant;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 /**
  * Service Implementation for managing OneTimePassword.
  */
 @Service
 @Slf4j
 @LepService(group = "service", name = "default")
+@RequiredArgsConstructor
 public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
     private final OtpSpecService otpSpecService;
@@ -44,15 +47,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
     private final CommunicationService communicationService;
 
-    public OneTimePasswordServiceImpl(OneTimePasswordRepository oneTimePasswordRepository,
-                                      OneTimePasswordMapper oneTimePasswordMapper,
-                                      OtpSpecService otpSpecService,
-                                      CommunicationService communicationService) {
-        this.oneTimePasswordRepository = oneTimePasswordRepository;
-        this.oneTimePasswordMapper = oneTimePasswordMapper;
-        this.otpSpecService = otpSpecService;
-        this.communicationService = communicationService;
-    }
+    private final SpecLimitValidationService specLimitValidationService;
 
     /**
      * Save a oneTimePassword.
@@ -67,6 +62,9 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
     public OneTimePasswordDto generate(OneTimePasswordDto oneTimePasswordDto) {
         log.debug("Request to generate OneTimePassword : {}", oneTimePasswordDto);
         OtpTypeSpec otpType = otpSpecService.getOtpTypeSpec(oneTimePasswordDto.getTypeKey());
+
+        //validate specification limit
+        specLimitValidationService.validateSpecificationLimit(oneTimePasswordDto, otpType);
 
         //generate otp
         Generex generex = new Generex(otpType.getPattern());

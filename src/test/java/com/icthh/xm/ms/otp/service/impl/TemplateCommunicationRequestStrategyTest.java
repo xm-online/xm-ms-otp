@@ -28,7 +28,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @Slf4j
 @RunWith(SpringRunner.class)
-@WithMockUser(authorities = {"SUPER-ADMIN"})
 @SpringBootTest(classes = {
     SecurityBeanOverrideConfiguration.class,
     OtpApp.class,
@@ -103,7 +102,8 @@ public class TemplateCommunicationRequestStrategyTest {
             TTL,
             OTP_SENDER_ID,
             MESSAGE_TEMPLATE,
-            List.of("msisdn")
+            List.of("msisdn"),
+            null
         );
     }
 }
