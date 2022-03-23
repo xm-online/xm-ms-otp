@@ -14,6 +14,7 @@ import com.icthh.xm.ms.otp.service.SpecLimitValidationService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
+import com.icthh.xm.ms.otp.web.rest.errors.InvalidPasswordException;
 import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
 import com.mifmif.common.regex.Generex;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * Service Implementation for managing OneTimePassword.
@@ -108,24 +111,53 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
     @Override
     public void check(OneTimePasswordCheckDto oneTimePasswordCheckDto) {
+        // validate
+        OneTimePassword otp = oneTimePasswordRepository
+            .findById(oneTimePasswordCheckDto.getId())
+            .orElse(null);
+        try {
+            if (otp == null) {
+                throw new OtpInvalidPasswordException();
+            }
 
-        OneTimePassword otp = oneTimePasswordRepository.findById(oneTimePasswordCheckDto.getId())
-            .orElseThrow(OtpInvalidPasswordException::new);
+            if (checkOtpState(otp)) {
+                throw new OtpInvalidPasswordException();
+            }
 
-        if (checkOtpState(otp)
-            || checkOtpDate(otp)
-            || checkOtpRetries(otp)
-            || checkOtpPasswd(otp, oneTimePasswordCheckDto)) {
+            if (checkOtpDate(otp)) {
+                throw new OtpInvalidPasswordException();
+            }
 
+            if (checkOtpRetries(otp)) {
+                throw new OtpInvalidPasswordException();
+            }
+
+            if (checkOtpPasswd(otp, oneTimePasswordCheckDto)) {
+                throw new OtpInvalidPasswordException();
+            }
+        } catch (InvalidPasswordException exception) {
             //if not - retries+
-            int retries = otp.getRetries();
-            otp.setRetries(++retries);
-            oneTimePasswordRepository.saveAndFlush(otp);
-            throw new OtpInvalidPasswordException();
-        } else {
-            otp.setStateKey(StateKey.VERIFIED);
-            oneTimePasswordRepository.saveAndFlush(otp);
+            if (otp != null) {
+                int retries = otp.getRetries();
+                otp.setRetries(++retries);
+                oneTimePasswordRepository.saveAndFlush(otp);
+            }
+
+            Boolean discloseCheckErrorsEnabled = ofNullable(otp)
+                .map(OneTimePassword::getTypeKey)
+                .map(otpSpecService::getOtpTypeSpec)
+                .map(OtpTypeSpec::getDiscloseCheckErrors)
+                .orElse(false);
+
+            if (discloseCheckErrorsEnabled) {
+                throw exception;
+            } else {
+                throw new InvalidPasswordException();
+            }
         }
+
+        otp.setStateKey(StateKey.VERIFIED);
+        oneTimePasswordRepository.saveAndFlush(otp);
     }
 
     private boolean checkOtpState(OneTimePassword otp) {

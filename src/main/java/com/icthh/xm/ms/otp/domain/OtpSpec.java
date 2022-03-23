@@ -3,7 +3,9 @@ package com.icthh.xm.ms.otp.domain;
 import com.icthh.xm.ms.otp.client.domain.CommunicationMessage.CommunicationMessageCharacteristic;
 import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.service.dto.LimitValidationType;
+import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
+import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -48,6 +50,18 @@ public class OtpSpec {
          * Specification generation limit.
          */
         private GenerationLimit generationLimit;
+
+        /**
+         * Disclose errors.
+         * <p>
+         * If property is set to {@link Boolean#TRUE}, the system will explicitly throw custom exception for
+         * each validation in {@link com.icthh.xm.ms.otp.service.OneTimePasswordService#check(OneTimePasswordCheckDto)}.
+         * </p>
+         * <p>
+         * Otherwise - the default {@link OtpInvalidPasswordException} with no details is thrown
+         * </p>
+         */
+        private Boolean discloseCheckErrors;
     }
 
     /**
@@ -71,6 +85,6 @@ public class OtpSpec {
         /**
          * Invocation limit value
          */
-        private Integer value;
+        private Integer value; // 5
     }
 }
