@@ -103,7 +103,8 @@ public class TemplateCommunicationRequestStrategyTest {
             OTP_SENDER_ID,
             MESSAGE_TEMPLATE,
             List.of("msisdn"),
-            null
+            null,
+            false
         );
     }
 }

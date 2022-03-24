@@ -117,23 +117,23 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
             .orElse(null);
         try {
             if (otp == null) {
-                throw new OtpInvalidPasswordException();
+                throw new OtpInvalidPasswordException("OTP Id is not correct");
             }
 
             if (checkOtpState(otp)) {
-                throw new OtpInvalidPasswordException();
+                throw new OtpInvalidPasswordException("Invalid OTP State");
             }
 
             if (checkOtpDate(otp)) {
-                throw new OtpInvalidPasswordException();
+                throw new OtpInvalidPasswordException("Invalid OTP End Date");
             }
 
             if (checkOtpRetries(otp)) {
-                throw new OtpInvalidPasswordException();
+                throw new OtpInvalidPasswordException("Maximum number of retries exceeded");
             }
 
             if (checkOtpPasswd(otp, oneTimePasswordCheckDto)) {
-                throw new OtpInvalidPasswordException();
+                throw new OtpInvalidPasswordException("OTP Password is not correct");
             }
         } catch (InvalidPasswordException exception) {
             //if not - retries+

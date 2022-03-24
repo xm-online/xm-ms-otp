@@ -231,7 +231,8 @@ public class OneTimePasswordResourceIntTest {
             OTP_SENDER_ID,
             template,
             modelKeys,
-            generationLimit
+            generationLimit,
+            false
         );
     }
 

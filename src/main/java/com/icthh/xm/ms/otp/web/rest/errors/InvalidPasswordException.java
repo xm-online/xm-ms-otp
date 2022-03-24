@@ -10,4 +10,8 @@ public class InvalidPasswordException extends AbstractThrowableProblem {
     public InvalidPasswordException() {
         super(ErrorConstants.INVALID_PASSWORD_TYPE, "Incorrect password", Status.BAD_REQUEST);
     }
+
+    public InvalidPasswordException(String title) {
+        super(ErrorConstants.INVALID_PASSWORD_TYPE, title, Status.BAD_REQUEST);
+    }
 }
