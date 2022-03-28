@@ -1,5 +1,7 @@
 package com.icthh.xm.ms.otp.service.impl;
 
+import static java.util.Optional.ofNullable;
+
 import com.icthh.xm.commons.lep.LogicExtensionPoint;
 import com.icthh.xm.commons.lep.spring.LepService;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
@@ -14,24 +16,25 @@ import com.icthh.xm.ms.otp.service.SpecLimitValidationService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
+import com.icthh.xm.ms.otp.web.rest.errors.ExpiredOtpException;
+import com.icthh.xm.ms.otp.web.rest.errors.IllegalOtpStateException;
 import com.icthh.xm.ms.otp.web.rest.errors.InvalidPasswordException;
+import com.icthh.xm.ms.otp.web.rest.errors.MaxOtpAttemptsExceededException;
 import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
+import com.icthh.xm.ms.otp.web.rest.errors.OtpPasswordNotMatchException;
 import com.mifmif.common.regex.Generex;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static java.util.Optional.ofNullable;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service Implementation for managing OneTimePassword.
@@ -114,26 +117,22 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         // validate
         OneTimePassword otp = oneTimePasswordRepository
             .findById(oneTimePasswordCheckDto.getId())
-            .orElse(null);
+            .orElseThrow(OtpInvalidPasswordException::new);
         try {
-            if (otp == null) {
-                throw new OtpInvalidPasswordException("OTP Id is not correct");
-            }
-
             if (checkOtpState(otp)) {
-                throw new OtpInvalidPasswordException("Invalid OTP State");
+                throw new IllegalOtpStateException();
             }
 
             if (checkOtpDate(otp)) {
-                throw new OtpInvalidPasswordException("Invalid OTP End Date");
+                throw new ExpiredOtpException();
             }
 
             if (checkOtpRetries(otp)) {
-                throw new OtpInvalidPasswordException("Maximum number of retries exceeded");
+                throw new MaxOtpAttemptsExceededException();
             }
 
             if (checkOtpPasswd(otp, oneTimePasswordCheckDto)) {
-                throw new OtpInvalidPasswordException("OTP Password is not correct");
+                throw new OtpPasswordNotMatchException();
             }
         } catch (InvalidPasswordException exception) {
             //if not - retries+
