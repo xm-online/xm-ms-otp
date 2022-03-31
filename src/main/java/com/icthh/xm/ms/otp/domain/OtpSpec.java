@@ -6,12 +6,11 @@ import com.icthh.xm.ms.otp.service.dto.LimitValidationType;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
+import java.util.List;
+import java.util.SortedMap;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
-import java.util.SortedMap;
 
 @Data
 public class OtpSpec {
@@ -85,6 +84,6 @@ public class OtpSpec {
         /**
          * Invocation limit value
          */
-        private Integer value; // 5
+        private Integer value;
     }
 }

@@ -21,7 +21,7 @@ import com.icthh.xm.ms.otp.web.rest.errors.IllegalOtpStateException;
 import com.icthh.xm.ms.otp.web.rest.errors.InvalidPasswordException;
 import com.icthh.xm.ms.otp.web.rest.errors.MaxOtpAttemptsExceededException;
 import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
-import com.icthh.xm.ms.otp.web.rest.errors.OtpPasswordNotMatchException;
+import com.icthh.xm.ms.otp.web.rest.errors.OtpNotMatchedException;
 import com.mifmif.common.regex.Generex;
 import java.math.BigInteger;
 import java.time.Instant;
@@ -114,26 +114,14 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
 
     @Override
     public void check(OneTimePasswordCheckDto oneTimePasswordCheckDto) {
-        // validate
         OneTimePassword otp = oneTimePasswordRepository
             .findById(oneTimePasswordCheckDto.getId())
             .orElseThrow(OtpInvalidPasswordException::new);
         try {
-            if (checkOtpState(otp)) {
-                throw new IllegalOtpStateException();
-            }
-
-            if (checkOtpDate(otp)) {
-                throw new ExpiredOtpException();
-            }
-
-            if (checkOtpRetries(otp)) {
-                throw new MaxOtpAttemptsExceededException();
-            }
-
-            if (checkOtpPasswd(otp, oneTimePasswordCheckDto)) {
-                throw new OtpPasswordNotMatchException();
-            }
+            checkOtpState(otp);
+            checkOtpDate(otp);
+            checkOtpRetries(otp);
+            checkOtpPasswd(otp, oneTimePasswordCheckDto);
         } catch (InvalidPasswordException exception) {
             //if not - retries+
             if (otp != null) {
@@ -148,6 +136,8 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
                 .map(OtpTypeSpec::getDiscloseCheckErrors)
                 .orElse(false);
 
+            log.error("Check failed for otp: {}, discloseCheckErrorsEnabled: {}, exception: {}", otp.getId(),
+                discloseCheckErrorsEnabled, exception);
             if (discloseCheckErrorsEnabled) {
                 throw exception;
             } else {
@@ -159,20 +149,28 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         oneTimePasswordRepository.saveAndFlush(otp);
     }
 
-    private boolean checkOtpState(OneTimePassword otp) {
-        return otp.getStateKey() != StateKey.ACTIVE;
+    private void checkOtpState(OneTimePassword otp) {
+        if (otp.getStateKey() != StateKey.ACTIVE) {
+            throw new IllegalOtpStateException();
+        }
     }
 
-    private boolean checkOtpDate(OneTimePassword otp) {
-        return otp.getEndDate().isBefore(Instant.now());
+    private void checkOtpDate(OneTimePassword otp) {
+        if (otp.getEndDate().isBefore(Instant.now())) {
+            throw new ExpiredOtpException();
+        }
     }
 
-    private boolean checkOtpRetries(OneTimePassword otp) {
-        return otp.getRetries() >= otpSpecService.getOtpTypeSpec(otp.getTypeKey()).getMaxRetries();
+    private void checkOtpRetries(OneTimePassword otp) {
+        if (otp.getRetries() >= otpSpecService.getOtpTypeSpec(otp.getTypeKey()).getMaxRetries()) {
+            throw new MaxOtpAttemptsExceededException();
+        }
     }
 
-    private boolean checkOtpPasswd(OneTimePassword otp, OneTimePasswordCheckDto otpForCheck) {
-        return !otp.getPasswordHash().equals(DigestUtils.sha256Hex(otpForCheck.getOtp()));
+    private void checkOtpPasswd(OneTimePassword otp, OneTimePasswordCheckDto otpForCheck) {
+        if (!otp.getPasswordHash().equals(DigestUtils.sha256Hex(otpForCheck.getOtp()))) {
+            throw new OtpNotMatchedException();
+        }
     }
 
     /**

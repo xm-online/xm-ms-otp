@@ -20,7 +20,7 @@ import com.icthh.xm.ms.otp.web.rest.errors.ExpiredOtpException;
 import com.icthh.xm.ms.otp.web.rest.errors.IllegalOtpStateException;
 import com.icthh.xm.ms.otp.web.rest.errors.InvalidPasswordException;
 import com.icthh.xm.ms.otp.web.rest.errors.MaxOtpAttemptsExceededException;
-import com.icthh.xm.ms.otp.web.rest.errors.OtpPasswordNotMatchException;
+import com.icthh.xm.ms.otp.web.rest.errors.OtpNotMatchedException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -189,8 +189,8 @@ public class OneTimePasswordServiceImplTest {
         oneTimePasswordService.check(dto);
     }
 
-    @Test(expected = OtpPasswordNotMatchException.class)
-    public void shouldThrowOtpPasswordNotMatchException() {
+    @Test(expected = OtpNotMatchedException.class)
+    public void shouldThrowOtpNotMatchedException() {
         OneTimePassword otp = buildOtp();
         otp.setPasswordHash("1111");
 
@@ -205,7 +205,7 @@ public class OneTimePasswordServiceImplTest {
     }
 
     @Test(expected = InvalidPasswordException.class)
-    public void shouldNotThrowOtpPasswordNotMatchException() {
+    public void shouldNotThrowOtpNotMatchedException() {
         OneTimePassword otp = buildOtp();
         otp.setPasswordHash("1111");
 
