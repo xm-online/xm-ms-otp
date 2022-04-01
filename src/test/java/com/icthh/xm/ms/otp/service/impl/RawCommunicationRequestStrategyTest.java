@@ -130,7 +130,8 @@ public class RawCommunicationRequestStrategyTest {
             OTP_SENDER_ID,
             null,
             null,
-            null
+            null,
+            false
         );
     }
 }
