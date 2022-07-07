@@ -47,7 +47,7 @@ public class SpecLimitValidationServiceImpl implements SpecLimitValidationServic
             if (otpSpec.getDiscloseCheckErrors() == Boolean.TRUE) {
                 throw originException;
             } else {
-                throw new MaxOtpAttemptsExceededException();
+                throw new InvalidPasswordException();
             }
         }
 
