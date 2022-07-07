@@ -6,7 +6,7 @@ import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.dto.LimitValidationType;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
-import com.icthh.xm.ms.otp.web.rest.errors.OtpInvalidPasswordException;
+import com.icthh.xm.ms.otp.web.rest.errors.OtpGenerationLimitReachedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -48,7 +48,7 @@ public class DBSpecLimitValidator implements SpecLimitValidator {
 
             if (count >= limitValue) {
                 log.error("validate: generation limit reached for receiver: {}", receiver);
-                throw new OtpInvalidPasswordException();
+                throw new OtpGenerationLimitReachedException();
             }
         } else {
             log.warn("validate: skipping invalid limit config for spec: {}", otpSpec.getKey());

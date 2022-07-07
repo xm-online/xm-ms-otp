@@ -112,6 +112,7 @@ public class OneTimePasswordResourceIntTest {
     private static final String EMAIL_TYPE_KEY = "EMAIL_TYPE_KEY";
     private static final String INVALID_LIMIT_TYPE_KEY = "INVALID_LIMIT_TYPE_KEY";
     private static final String VALID_LIMIT_TYPE_KEY = "VALID_LIMIT_TYPE_KEY";
+    private static final String DISCLOSED_ERROR_AND_LIMIT_TYPE_KEY = "DISCLOSED_ERROR_AND_LIMIT_TYPE_KEY";
     private static final String OTP_SENDER_ID = "Voodaphone";
     public static final String DEFAULT_OTP = "123";
 
@@ -194,10 +195,11 @@ public class OneTimePasswordResourceIntTest {
         OtpSpecService otpSpecService = new OtpSpecService(applicationProperties);
         OtpSpec otpSpec = new OtpSpec();
         otpSpec.setTypes(List.of(
-            getOtpTypeSpec(PHONE_NUMBER_TYPE_KEY, PHONE_NUMBER, null, emptyList(), null),
-            getOtpTypeSpec(EMAIL_TYPE_KEY, EMAIL, "test-email-template", List.of("msisdn"), null),
-            getOtpTypeSpec(INVALID_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(DB, -1, -1)),
-            getOtpTypeSpec(VALID_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(DB, 1800, 1))
+            getOtpTypeSpec(PHONE_NUMBER_TYPE_KEY, PHONE_NUMBER, null, emptyList(), null, false),
+            getOtpTypeSpec(EMAIL_TYPE_KEY, EMAIL, "test-email-template", List.of("msisdn"), null, false),
+            getOtpTypeSpec(INVALID_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(DB, -1, -1), false),
+            getOtpTypeSpec(VALID_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(DB, 1800, 1), false),
+            getOtpTypeSpec(DISCLOSED_ERROR_AND_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(DB, 1800, 1), true)
         ));
         otpSpecService.setOtpSpec(otpSpec);
         return new OneTimePasswordServiceImpl(
@@ -214,7 +216,8 @@ public class OneTimePasswordResourceIntTest {
                                        ReceiverTypeKey receiverTypeKey,
                                        String template,
                                        List<String> modelKeys,
-                                       GenerationLimit generationLimit) {
+                                       GenerationLimit generationLimit,
+                                       Boolean discloseCheckErrors) {
         SortedMap<String, String> langMap = new TreeMap<>();
         langMap.put("EN", "Your otp ${otp}");
         langMap.put("UA", "Ваш otp ${otp}");
@@ -232,7 +235,7 @@ public class OneTimePasswordResourceIntTest {
             template,
             modelKeys,
             generationLimit,
-            false
+            discloseCheckErrors
         );
     }
 
@@ -358,6 +361,43 @@ public class OneTimePasswordResourceIntTest {
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
             .andExpect(jsonPath("$.title").value("Incorrect password"))
+            .andExpect(jsonPath("$.status").value("400"));
+    }
+
+    @Test
+    public void testOtpGeneration_shouldThrowCustomExceptionWhenGenerationLimitReachedAndErrorDisclosureIsEnabled()
+        throws Exception {
+        OneTimePasswordDto dto = new OneTimePasswordDto();
+        dto.setReceiver(RECEIVER);
+        dto.setReceiverTypeKey(PHONE_NUMBER);
+        dto.setTypeKey(DISCLOSED_ERROR_AND_LIMIT_TYPE_KEY);
+        dto.setLangKey("EN");
+        String requestJson = toJson(dto);
+
+        MockHttpServletRequestBuilder firstRequestBody = post("/api/one-time-password")
+            .contentType(APPLICATION_JSON_UTF8)
+            .content(requestJson);
+        MvcResult firstResult = restMockMvc
+            .perform(firstRequestBody)
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andReturn();
+
+        String respStr = firstResult.getResponse().getContentAsString();
+        log.info(respStr);
+        OneTimePasswordDto oneTimePasswordDto = toDto(respStr, OneTimePasswordDto.class);
+        OneTimePassword byId = oneTimePasswordRepository.findById(oneTimePasswordDto.getId()).get();
+        assertNotNull(byId);
+        assertEquals(RECEIVER, byId.getReceiver());
+
+        MockHttpServletRequestBuilder secondRequestBody = post("/api/one-time-password")
+            .contentType(APPLICATION_JSON_UTF8)
+            .content(requestJson);
+        restMockMvc
+            .perform(secondRequestBody)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
+            .andExpect(jsonPath("$.title").value("OTP generation limit reached"))
             .andExpect(jsonPath("$.status").value("400"));
     }
 

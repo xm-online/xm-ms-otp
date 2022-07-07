@@ -10,6 +10,7 @@ public final class ErrorConstants {
     public static final String ILLEGAL_OTP_STATE = "error.illegal.otp.state";
     public static final String MAX_OTP_ATTEMPTS_EXCEEDED = "error.max.otp.attempts.exceeded";
     public static final String OTP_NOT_MATCHED = "error.otp.not.matched";
+    public static final String OTP_GENERATION_LIMIT_REACHED = "error.otp.generation.limit.reached";
     public static final String PROBLEM_BASE_URL = "https://www.jhipster.tech/problem";
     public static final URI DEFAULT_TYPE = URI.create(PROBLEM_BASE_URL + "/problem-with-message");
     public static final URI CONSTRAINT_VIOLATION_TYPE = URI.create(PROBLEM_BASE_URL + "/constraint-violation");
