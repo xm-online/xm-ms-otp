@@ -44,10 +44,10 @@ public class SpecLimitValidationServiceImpl implements SpecLimitValidationServic
                 .map(validators::get)
                 .ifPresent(validator -> validator.validate(oneTimePasswordDto, otpSpec));
         } catch (InvalidPasswordException originException) {
-            if (otpSpec.getDiscloseCheckErrors()) {
-                throw new MaxOtpAttemptsExceededException();
-            } else {
+            if (otpSpec.getDiscloseCheckErrors() == Boolean.TRUE) {
                 throw originException;
+            } else {
+                throw new MaxOtpAttemptsExceededException();
             }
         }
 
