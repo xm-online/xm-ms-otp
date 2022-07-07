@@ -11,7 +11,7 @@ import com.icthh.xm.ms.otp.repository.OneTimePasswordRepository;
 import com.icthh.xm.ms.otp.service.dto.LimitValidationType;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.web.rest.errors.InvalidPasswordException;
-import com.icthh.xm.ms.otp.web.rest.errors.MaxOtpAttemptsExceededException;
+import com.icthh.xm.ms.otp.web.rest.errors.OtpGenerationLimitReachedException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,8 +37,8 @@ public class SpecLimitValidationServiceImplTest {
     @MockBean
     OneTimePasswordRepository repo;
 
-    @Test(expected = MaxOtpAttemptsExceededException.class)
-    public void shouldThrowMaxOtpAttemptsExceededException() {
+    @Test(expected = OtpGenerationLimitReachedException.class)
+    public void shouldThrowOtpGenerationLimitReachedException() {
         OneTimePasswordDto dto = new OneTimePasswordDto();
         dto.setTypeKey("TEST-TYPE-KEY");
 
