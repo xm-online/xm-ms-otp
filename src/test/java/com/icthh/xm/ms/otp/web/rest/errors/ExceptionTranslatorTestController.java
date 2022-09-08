@@ -1,22 +1,19 @@
 package com.icthh.xm.ms.otp.web.rest.errors;
 
+import com.icthh.xm.commons.exceptions.BusinessException;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
+import org.zalando.problem.AbstractThrowableProblem;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.zalando.problem.Status.FORBIDDEN;
 
 @RestController
 public class ExceptionTranslatorTestController {
@@ -41,6 +38,14 @@ public class ExceptionTranslatorTestController {
         params.put("foo", "foo_value");
         params.put("bar", "bar_value");
         throw new CustomParameterizedException("test parameterized error", params);
+    }
+
+    @GetMapping("/test/parameterized-error-without-message")
+    public void parameterizedErrorWithoutMessage() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("foo", "foo_value");
+        params.put("bar", "bar_value");
+        throw new CustomParameterizedException(null, params);
     }
 
     @GetMapping("/test/missing-servlet-request-part")
@@ -71,6 +76,92 @@ public class ExceptionTranslatorTestController {
         throw new RuntimeException();
     }
 
+    @GetMapping("/test/invalid-password-error")
+    public void invalidPasswordError() {
+        throw new InvalidPasswordException();
+    }
+
+    @GetMapping("/test/expired-otp-error")
+    public void expiredOtpError() {
+        throw new ExpiredOtpException();
+    }
+
+    @GetMapping("/test/illegal-otp-state-error")
+    public void illegalOtpStateError() {
+        throw new IllegalOtpStateException();
+    }
+
+    @GetMapping("/test/max-otp-attempts-exceeded-error")
+    public void maxOtpAttemptsExceededError() {
+        throw new MaxOtpAttemptsExceededException();
+    }
+
+    @GetMapping("/test/otp-not-matched-exceeded-error")
+    public void otpNotMatchedError() {
+        throw new OtpNotMatchedException();
+    }
+
+    @GetMapping("/test/otp-generation-limit-reached-error")
+    public void otpGenerationLimitReachedError() {
+        throw new OtpGenerationLimitReachedException();
+    }
+
+    @GetMapping("/test/bad-request-alert-error")
+    public void badRequestAlertError() {
+        throw new BadRequestAlertException(null, "Cannot create otp", "otp", "error.otp.generation.failure");
+    }
+
+    @GetMapping("/test/illegal-argument-error")
+    public void illegalArgumentError() {
+        throw new IllegalArgumentException("Profile TEST-PROFILE not found");
+    }
+
+    @GetMapping("/test/illegal-state-error")
+    public void illegalStateError() {
+        throw new IllegalStateException("Can't send message, because tenant config is null");
+    }
+
+    @GetMapping("/test/business-error")
+    public void businessError() {
+        throw new BusinessException("error.otp.retrieval.failure", "Could not retrieve otp");
+    }
+
+    @GetMapping("/test/otp-internal-server-error")
+    public void otpInternalServerError() {
+        throw new InternalServerErrorException("Internal Server Error from OTP");
+    }
+
+    @GetMapping("/test/email-already-used")
+    public void emailAlreadyUsedError() {
+        throw new EmailAlreadyUsedException();
+    }
+
+    @GetMapping("/test/email-not-found")
+    public void emailNotFoundError() {
+        throw new EmailNotFoundException();
+    }
+
+    @GetMapping("/test/login-already-used")
+    public void loginAlreadyUsedError() {
+        throw new LoginAlreadyUsedException();
+    }
+
+    @GetMapping("/test/abstract-throwable-problem-impl")
+    public void abstractThrowableProblemError() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("key1", "var1");
+        map.put("key2", "var2");
+        throw new AbstractThrowableProblemImpl("Too often otp generation", map);
+    }
+
+    @GetMapping("/test/abstract-throwable-problem-impl-without-message")
+    public void abstractThrowableProblemErrorWithoutMessage() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("key1", "var1");
+        map.put("key2", "var2");
+        throw new AbstractThrowableProblemImpl(null, map);
+    }
+
     public static class TestDTO {
 
         @NotNull
@@ -89,5 +180,18 @@ public class ExceptionTranslatorTestController {
     @SuppressWarnings("serial")
     public static class TestResponseStatusException extends RuntimeException {
     }
+}
 
+class AbstractThrowableProblemImpl extends AbstractThrowableProblem {
+
+    AbstractThrowableProblemImpl(String message, Map<String, Object> paramMap) {
+        super(null, "OTP Generation Exception", FORBIDDEN, null, null, null, toProblemParameters(message, paramMap));
+    }
+
+    static Map<String, Object> toProblemParameters(String message, Map<String, Object> paramMap) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("message", message);
+        parameters.put("params", paramMap);
+        return parameters;
+    }
 }

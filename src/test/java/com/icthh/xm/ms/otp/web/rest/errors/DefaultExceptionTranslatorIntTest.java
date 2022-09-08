@@ -15,24 +15,22 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Test class for the ExceptionTranslator controller advice.
  *
- * @see ExceptionTranslator
+ * @see DefaultExceptionTranslator
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {SecurityBeanOverrideConfiguration.class, OtpApp.class})
-public class ExceptionTranslatorIntTest {
+public class DefaultExceptionTranslatorIntTest {
 
     @Autowired
     private ExceptionTranslatorTestController controller;
 
     @Autowired
-    private ExceptionTranslator exceptionTranslator;
+    private DefaultExceptionTranslator exceptionTranslator;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -148,4 +146,12 @@ public class ExceptionTranslatorIntTest {
             .andExpect(jsonPath("$.title").value("Internal Server Error"));
     }
 
+    @Test
+    public void invalidPasswordException() throws Exception {
+        mockMvc.perform(get("/test/invalid-password-error"))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+            .andExpect(jsonPath("$.errorKey").value("error.otp.invalid.password"))
+            .andExpect(jsonPath("$.title").value("Incorrect password"));
+    }
 }

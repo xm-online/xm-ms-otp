@@ -11,6 +11,13 @@ public final class ErrorConstants {
     public static final String MAX_OTP_ATTEMPTS_EXCEEDED = "error.max.otp.attempts.exceeded";
     public static final String OTP_NOT_MATCHED = "error.otp.not.matched";
     public static final String OTP_GENERATION_LIMIT_REACHED = "error.otp.generation.limit.reached";
+    public static final String ILLEGAL_ARGUMENT = "error.illegal.argument";
+    public static final String ILLEGAL_STATE = "error.illegal.state";
+    public static final String OTP_INTERNAL_SERVER_ERROR = "error.otp.internal.server.error";
+    public static final String CUSTOM_PARAMETRIZED_ERROR = "error.custom.parametrized.error";
+    public static final String EMAIL_ALREADY_USED_ERROR = "error.email.already.used";
+    public static final String EMAIL_NOT_FOUND_ERROR = "error.email.not.found";
+    public static final String LOGIN_ALREADY_USED_ERROR = "error.login.already.used";
     public static final String PROBLEM_BASE_URL = "https://www.jhipster.tech/problem";
     public static final URI DEFAULT_TYPE = URI.create(PROBLEM_BASE_URL + "/problem-with-message");
     public static final URI CONSTRAINT_VIOLATION_TYPE = URI.create(PROBLEM_BASE_URL + "/constraint-violation");

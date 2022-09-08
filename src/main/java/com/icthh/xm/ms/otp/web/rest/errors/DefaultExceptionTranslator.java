@@ -2,6 +2,9 @@ package com.icthh.xm.ms.otp.web.rest.errors;
 
 import com.icthh.xm.ms.otp.web.rest.util.HeaderUtil;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -28,7 +31,9 @@ import java.util.stream.Collectors;
  * The error response follows RFC7807 - Problem Details for HTTP APIs (https://tools.ietf.org/html/rfc7807)
  */
 @ControllerAdvice
-public class ExceptionTranslator implements ProblemHandling {
+@ConditionalOnProperty(prefix = "application", name = "exception-translator", havingValue = "default", matchIfMissing = true)
+@Order(Ordered.HIGHEST_PRECEDENCE)
+public class DefaultExceptionTranslator implements ProblemHandling {
 
     /**
      * Post-process the Problem payload to add the message key for the front-end if needed

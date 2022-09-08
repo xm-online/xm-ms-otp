@@ -46,7 +46,7 @@ import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.service.impl.CommunicationMessageStrategyFactory;
 import com.icthh.xm.ms.otp.service.impl.OneTimePasswordServiceImpl;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
-import com.icthh.xm.ms.otp.web.rest.errors.ExceptionTranslator;
+import com.icthh.xm.ms.otp.web.rest.errors.DefaultExceptionTranslator;
 import feign.form.util.CharsetUtil;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -125,7 +125,7 @@ public class OneTimePasswordResourceIntTest {
     private OneTimePasswordRepository oneTimePasswordRepository;
 
     @Autowired
-    private ExceptionTranslator exceptionTranslator;
+    private DefaultExceptionTranslator exceptionTranslator;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;

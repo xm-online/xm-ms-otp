@@ -22,6 +22,7 @@ public class ApplicationProperties {
     private String kafkaSystemTopic;
     private String kafkaSystemQueue;
     private boolean kafkaEnabled;
+    private String exceptionTranslator;
     private boolean timelinesEnabled;
     private String specPath;
     private String tenantPath;
