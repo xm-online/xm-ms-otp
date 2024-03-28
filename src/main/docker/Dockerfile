@@ -4,6 +4,9 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 ADD src/main/docker/entrypoint.sh /
 
+ADD lib/spring-instrument-6.1.5.jar /app/lib/
+ADD lib/aspectjweaver-1.9.22.jar /app/lib/
+
 RUN chmod 755 entrypoint.sh && apt-get update && apt-get install -y locales locales-all zip unzip curl && apt-get clean
 
 ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
@@ -16,7 +19,8 @@ ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
     JAVA_OPTS="-Xms64m -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false \
     -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false \
     -Dcom.sun.management.jmxremote.rmi.port=19999 -Dcom.sun.management.jmxremote.port=19999 \
-    --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED"
+    --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
+    -javaagent:/app/lib/spring-instrument-6.1.5.jar -javaagent:/app/lib/aspectjweaver-1.9.22.jar"
 # --add-opens fix issues with illegal reflective access operation in groovy lib, will be fixed in next groovy releases
 
 # add directly the war
