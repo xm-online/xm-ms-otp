@@ -291,6 +291,8 @@ dependencies {
     implementation ("io.springfox:springfox-swagger2") {
         exclude module: "mapstruct"
     }
+    implementation 'org.springframework:spring-aspects'
+    implementation 'org.springframework:spring-tx'
     implementation "io.springfox:springfox-bean-validators"
     implementation "org.postgresql:postgresql"
     liquibaseRuntime "org.postgresql:postgresql"

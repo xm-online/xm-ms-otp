@@ -1,0 +1,8 @@
+<aspectj>
+    <weaver options="-verbose">
+        <include within="com.icthh..*" />
+        <include within="XM.otp.lep..*" />
+        <include within="service..*" />
+        <include within="common..*" />
+    </weaver>
+</aspectj>

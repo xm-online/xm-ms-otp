@@ -26,5 +26,8 @@ if [ -n "${APPLICATION_EXTERNAL_CLASSPATH}" ]; then
     cd /
 fi
 
+COPY lib/spring-instrument-6.1.5.jar /app/lib/
+COPY lib/aspectjweaver-1.9.22.jar /app/lib/
+
 echo "The application will start in ${JHIPSTER_SLEEP}s..." && sleep ${JHIPSTER_SLEEP}
-exec java ${JAVA_OPTS} -Xmx$XMX -Djava.security.egd=file:/dev/./urandom -jar "app.war" "$@"
+exec java ${JAVA_OPTS} -Xmx$XMX -javaagent:/app/lib/spring-instrument-6.1.5.jar -javaagent:/app/lib/aspectjweaver-1.9.22.jar -Djava.security.egd=file:/dev/./urandom -jar "app.war" "$@"
