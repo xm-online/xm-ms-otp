@@ -136,7 +136,7 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
                 .map(OtpTypeSpec::getDiscloseCheckErrors)
                 .orElse(false);
 
-            log.error("Check failed for otp: {}, discloseCheckErrorsEnabled: {}, exception: {}", otp.getId(),
+            log.error("Check failed for otp: {}, discloseCheckErrorsEnabled: {}, exception:", otp.getId(),
                 discloseCheckErrorsEnabled, exception);
             if (discloseCheckErrorsEnabled) {
                 throw exception;
