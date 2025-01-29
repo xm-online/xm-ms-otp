@@ -8,6 +8,7 @@ import com.icthh.xm.ms.otp.security.AuthoritiesConstants;
 
 import com.icthh.xm.ms.otp.security.HttpComponentsClientHttpRequestFactoryBasicAuth;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.web.client.RestTemplate;
 
+@Slf4j
 @Configuration
 @EnableResourceServer
 @RequiredArgsConstructor
@@ -82,6 +84,7 @@ public class SecurityConfiguration extends ResourceServerConfigurerAdapter {
         RestTemplate restTemplate = new RestTemplate();
 
         if (ribbonTemplateEnabled) {
+            log.info("loadBalancedRestTemplate: using Ribbon load balancer");
             customizerProvider.ifAvailable(customizer -> customizer.customize(restTemplate));
         }
 
