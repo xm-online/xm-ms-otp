@@ -8,6 +8,7 @@ import com.icthh.xm.ms.otp.security.AuthoritiesConstants;
 
 import com.icthh.xm.ms.otp.security.HttpComponentsClientHttpRequestFactoryBasicAuth;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
@@ -32,6 +33,9 @@ import org.springframework.web.client.RestTemplate;
 public class SecurityConfiguration extends ResourceServerConfigurerAdapter {
 
     private final OAuth2Properties oAuth2Properties;
+
+    @Value("${ribbon.http.client.enabled:true}")
+    private Boolean ribbonTemplateEnabled;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -74,9 +78,13 @@ public class SecurityConfiguration extends ResourceServerConfigurerAdapter {
 
     @Bean
 	@Qualifier("loadBalancedRestTemplate")
-    public RestTemplate loadBalancedRestTemplate(RestTemplateCustomizer customizer) {
+    public RestTemplate loadBalancedRestTemplate(ObjectProvider<RestTemplateCustomizer> customizerProvider) {
         RestTemplate restTemplate = new RestTemplate();
-        customizer.customize(restTemplate);
+
+        if (ribbonTemplateEnabled) {
+            customizerProvider.ifAvailable(customizer -> customizer.customize(restTemplate));
+        }
+
         return restTemplate;
     }
 
