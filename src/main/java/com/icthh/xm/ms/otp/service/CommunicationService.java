@@ -29,7 +29,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-@Component
+@Component("otpCommunicationService")
 @Slf4j
 @LepService(group = "service")
 public class CommunicationService {
