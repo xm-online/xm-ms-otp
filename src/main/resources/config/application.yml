@@ -14,28 +14,21 @@
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
-feign:
-    hystrix:
-        enabled: true
+#feign:
 #    client:
 #        config:
 #            default:
 #                connectTimeout: 5000
 #                readTimeout: 5000
 
-# See https://github.com/Netflix/Hystrix/wiki/Configuration
-hystrix:
-    command:
-        default:
-            execution:
-                isolation:
-                    strategy: SEMAPHORE
-# See https://github.com/spring-cloud/spring-cloud-netflix/issues/1330
-#                    thread:
-#                        timeoutInMilliseconds: 10000
-    shareSecurityContext: true
-
 management:
+    tracing:
+        export:
+            enabled: ${MANAGEMENT_TRACING_EXPORT_ENABLED:false}
+    otlp:
+        metrics:
+            export:
+                enabled: ${MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED:false}
     endpoints:
         web:
             base-path: /management
@@ -43,13 +36,18 @@ management:
                 include: ["configprops", "env", "health", "info", "threaddump", "logfile", "jhimetrics", "prometheus" ]
     endpoint:
         health:
-            show-details: when_authorized
+            show-details: when-authorized
     info:
         git:
             mode: full
     health:
         mail:
             enabled: false # When using the MailService, configure an SMTP server and set this to true
+    prometheus:
+        metrics:
+            export:
+                enabled: true
+                step: 60
     metrics:
         enable:
             http: true
@@ -57,10 +55,6 @@ management:
             logback: true
             process: true
             system: true
-        export:
-            prometheus:
-                enabled: true
-                step: 60
 spring:
     application:
         name: otp
@@ -74,27 +68,27 @@ spring:
                     enabled: false
     jpa:
         open-in-view: false
+        properties:
+            # Hibernate 5 stored Instant as a plain timestamp in the JVM time zone; keep that for the existing rows
+            hibernate.timezone.default_storage: NORMALIZE
+            hibernate.type.preferred_instant_jdbc_type: TIMESTAMP
         hibernate:
             ddl-auto: none
             naming:
-                physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
-                implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+                physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+                implicit-strategy: org.springframework.boot.hibernate.SpringImplicitNamingStrategy
+    jackson:
+        mapper:
+            # Jackson 3 sorts properties alphabetically by default; keep the declaration order responses had before
+            sort-properties-alphabetically: false
     main:
         allow-bean-definition-overriding: true
     messages:
         basename: i18n/messages
-    mvc:
-        favicon:
-            enabled: false
     thymeleaf:
         mode: HTML
     liquibase:
         default-schema: XM
-
-security:
-    oauth2:
-        resource:
-            filter-order: 3
 
 server:
     servlet:
@@ -128,20 +122,19 @@ jhipster:
         #max-age: 1800
     mail:
         from: otp@localhost
-    swagger:
-        default-include-pattern: /api/.*
+    api-docs:
+        default-include-pattern: ${server.servlet.context-path:}/api/**
+        management-include-pattern: ${server.servlet.context-path:}/management/**
         title: otp API
         description: otp API documentation
-        version: 0.0.1
-        terms-of-service-url:
-        contact-name:
-        contact-url:
-        contact-email:
-        license:
-        license-url:
+    security:
+        # required by xm-commons SecurityConfiguration. Master sent no Content-Security-Policy header: the policy
+        # is permissive so the tenant login page (HTML from the config repository) keeps loading its resources
+        content-security-policy: "default-src * data: blob: 'unsafe-inline' 'unsafe-eval'"
 base-package: com.icthh.xm.ms.otp
 logging:
-    file: build/otp.log
+    file:
+        name: build/otp.log
 
 xm-config:
     enabled: true
@@ -168,7 +161,7 @@ application:
         max-attempts: 3
         delay: 1000 #in milliseconds
         multiplier: 2
-    tenant-ignored-path-list: /swagger-resources/configuration/ui, /management/health, /oauth/token_key, /h2-console
+    tenant-ignored-path-list: /swagger-resources/configuration/ui, /management/health, /oauth/token_key, /h2-console, /v3/api-docs
     timelines-enabled: true
     spec-path: /config/tenants/XM/otp/otpspec.yml
     tenant-path: /config/tenants/XM/tenant-config.yml

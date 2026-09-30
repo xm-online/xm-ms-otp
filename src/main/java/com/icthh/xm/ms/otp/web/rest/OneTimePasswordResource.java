@@ -1,6 +1,5 @@
 package com.icthh.xm.ms.otp.web.rest;
 
-import com.codahale.metrics.annotation.Timed;
 import com.icthh.xm.commons.permission.annotation.PrivilegeDescription;
 import com.icthh.xm.commons.security.XmAuthenticationContextHolder;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -45,7 +44,6 @@ public class OneTimePasswordResource {
     private final UaaService uaaRepository;
     private final XmAuthenticationContextHolder authenticationContextHolder;
 
-    @Timed
     @GetMapping(value = "/login", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView login() {
         return new ModelAndView("loginPageView");
@@ -60,7 +58,6 @@ public class OneTimePasswordResource {
      */
     @PreAuthorize("hasPermission({'oneTimePasswordDto': #oneTimePasswordDto} ,'OTP.ONETIMEPASSWORD.GENERATE')")
     @PostMapping("/one-time-password")
-    @Timed
     @PrivilegeDescription("Privilege to create a new one time password")
     public ResponseEntity<OneTimePasswordDto> generateOneTimePassword(
         @Valid @RequestBody OneTimePasswordDto oneTimePasswordDto) {
@@ -80,7 +77,6 @@ public class OneTimePasswordResource {
      */
     @PreAuthorize("hasPermission(null, 'OTP.ONETIMEPASSWORD.GET')")
     @GetMapping("/one-time-password/{id}")
-    @Timed
     @PrivilegeDescription("Privilege to get an one time password information")
     public OneTimePasswordDto getOneTimePassword(@PathVariable Long id) {
         log.debug("received request to get oneTimePassword with id: {}", id);
@@ -100,7 +96,6 @@ public class OneTimePasswordResource {
      */
     @PreAuthorize("hasPermission({'oneTimePasswordCheckDto': #oneTimePasswordCheckDto} ,'OTP.ONETIMEPASSWORD.CHECK')")
     @PostMapping("/one-time-password/check")
-    @Timed
     @PrivilegeDescription("Privilege to validate an existing oneTimePassword")
     public ResponseEntity<OneTimePasswordCheckDto> checkOneTimePassword(
         @Valid @RequestBody OneTimePasswordCheckDto oneTimePasswordCheckDto) throws URISyntaxException {
@@ -119,7 +114,6 @@ public class OneTimePasswordResource {
      */
     @PreAuthorize("hasPermission({'oneTimePasswordCheckDto': #oneTimePasswordCheckDto} ,'OTP.ONETIMEPASSWORD.CHECK')")
     @PostMapping("/one-time-password/validate")
-    @Timed
     @PrivilegeDescription("Privilege to validate an existing oneTimePassword")
     public RedirectView checkOneTimePasswordAndRedirectWithCode(@Valid @RequestBody OneTimePasswordCheckDto oneTimePasswordCheckDto,
                                                                 @RequestHeader(value = "redirect-uri") String redirectUri) throws URISyntaxException {
@@ -136,7 +130,6 @@ public class OneTimePasswordResource {
      * @param code jwt token
      */
     @PostMapping("/oauth/token")
-    @Timed
     public ResponseEntity validateCode(@RequestParam(name = "code") String code) {
         return ResponseEntity.ok(of(ACCESS_TOKEN, code));
     }
@@ -145,7 +138,6 @@ public class OneTimePasswordResource {
      * GET /userinfo  Return user information gotten from additional details of access_token
      */
     @GetMapping("/userinfo")
-    @Timed
     public ResponseEntity getUserInfo() {
         Optional<String> login = authenticationContextHolder.getContext().getAdditionalDetailsValue(RECEIVER);
         if (!login.isPresent()) {
