@@ -1,6 +1,6 @@
 package com.icthh.xm.ms.otp.repository;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.icthh.xm.ms.otp.OtpApp;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
@@ -9,15 +9,11 @@ import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import groovy.util.logging.Slf4j;
 import java.time.Instant;
 import java.util.List;
-import java.util.Random;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = {OtpApp.class})
 public class OneTimePasswordRepositoryTest {
 
@@ -44,8 +40,9 @@ public class OneTimePasswordRepositoryTest {
 
     private OneTimePassword oneTimePassword(String receiver, Instant startDate) {
         Instant endDate = startDate.plusSeconds(120L);
+        // no preset id: Hibernate 6.6+ rejects merging a new entity whose generated id is already set
         return new OneTimePassword(
-            new Random().nextLong(),
+            null,
             receiver,
             ReceiverTypeKey.NAME,
             "typeKey",

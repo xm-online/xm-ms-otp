@@ -1,11 +1,9 @@
 package com.icthh.xm.ms.otp.web.rest.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.LinkedList;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 
 public class HeaderUtilTest {
@@ -17,9 +15,9 @@ public class HeaderUtilTest {
         assertNotNull(headers.get("X-otpApp-error"));
         assertNotNull(headers.get("X-otpApp-params"));
         assertNotNull(headers.get("X-otpApp-errorKey"));
-        assertEquals(((LinkedList<String>)headers.get("X-otpApp-error")).getFirst(), "default");
-        assertEquals(((LinkedList<String>)headers.get("X-otpApp-params")).getFirst(), "entity");
-        assertEquals(((LinkedList<String>)headers.get("X-otpApp-errorKey")).getFirst(), "errorKey");
+        assertEquals(headers.getFirst("X-otpApp-error"), "default");
+        assertEquals(headers.getFirst("X-otpApp-params"), "entity");
+        assertEquals(headers.getFirst("X-otpApp-errorKey"), "errorKey");
     }
 
     @Test
@@ -28,7 +26,7 @@ public class HeaderUtilTest {
         assertNotNull(headers);
         assertNotNull(headers.get("X-otpApp-alert"));
         assertNotNull(headers.get("X-otpApp-params"));
-        assertEquals(((LinkedList<String>)headers.get("X-otpApp-alert")).getFirst(), "message");
-        assertEquals(((LinkedList<String>)headers.get("X-otpApp-params")).getFirst(), "param");
+        assertEquals(headers.getFirst("X-otpApp-alert"), "message");
+        assertEquals(headers.getFirst("X-otpApp-params"), "param");
     }
 }
