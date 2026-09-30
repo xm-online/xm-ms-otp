@@ -6,7 +6,7 @@ configurations {
 }
 
 dependencies {
-    developmentOnly "org.springframework.boot:spring-boot-devtools"
+    developmentOnly "org.springframework.boot:spring-boot-devtools:${springBootVersion}"
     implementation "com.h2database:h2"
 }
 
@@ -20,14 +20,13 @@ if (project.hasProperty("tls")) {
 
 springBoot {
     buildInfo {
-		properties {
-			time = null
-		}
-	}
+        excludes = ['time']
+    }
 }
 
 bootRun {
     args = []
+    systemProperty 'user.timezone', 'UTC'
 }
 
 
@@ -45,4 +44,3 @@ processResources {
         }
     }
 }
-
