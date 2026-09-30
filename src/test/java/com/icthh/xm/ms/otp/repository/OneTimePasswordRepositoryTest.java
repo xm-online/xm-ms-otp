@@ -8,6 +8,7 @@ import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import groovy.util.logging.Slf4j;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,8 @@ public class OneTimePasswordRepositoryTest {
         oneTimePasswordRepository.saveAll(List.of(first, second, third));
 
         OneTimePassword newestOtp = oneTimePasswordRepository.findTopByReceiverOrderByStartDateDesc(receiver);
-        assertEquals(nowThree, newestOtp.getStartDate());
+        // the database keeps microseconds, Instant.now() on Linux with Java 15+ has nanoseconds
+        assertEquals(nowThree.truncatedTo(ChronoUnit.MICROS), newestOtp.getStartDate().truncatedTo(ChronoUnit.MICROS));
     }
 
     private OneTimePassword oneTimePassword(String receiver, Instant startDate) {
