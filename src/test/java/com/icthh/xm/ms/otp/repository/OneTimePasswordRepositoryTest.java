@@ -23,11 +23,12 @@ public class OneTimePasswordRepositoryTest {
 
     @Test
     public void testFindTopByReceiverOrderByStartDateDesc_shouldReturnLatestOTP() throws InterruptedException {
-        Instant now = Instant.now();
+        // the database keeps microseconds (rounded), Instant.now() on Linux with Java 15+ has nanoseconds
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         Thread.sleep(10L); // just in case the test executes the code too fast
-        Instant nowTwo = Instant.now();
+        Instant nowTwo = Instant.now().truncatedTo(ChronoUnit.MICROS);
         Thread.sleep(10L); // just in case the test executes the code too fast
-        Instant nowThree = Instant.now();
+        Instant nowThree = Instant.now().truncatedTo(ChronoUnit.MICROS);
 
         String receiver = "123";
         OneTimePassword first = oneTimePassword(receiver, now);
@@ -36,8 +37,7 @@ public class OneTimePasswordRepositoryTest {
         oneTimePasswordRepository.saveAll(List.of(first, second, third));
 
         OneTimePassword newestOtp = oneTimePasswordRepository.findTopByReceiverOrderByStartDateDesc(receiver);
-        // the database keeps microseconds, Instant.now() on Linux with Java 15+ has nanoseconds
-        assertEquals(nowThree.truncatedTo(ChronoUnit.MICROS), newestOtp.getStartDate().truncatedTo(ChronoUnit.MICROS));
+        assertEquals(nowThree, newestOtp.getStartDate());
     }
 
     private OneTimePassword oneTimePassword(String receiver, Instant startDate) {
