@@ -1,5 +1,7 @@
 package com.icthh.xm.ms.otp.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -28,17 +30,14 @@ import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit4.SpringRunner;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @WithMockUser(authorities = {"SUPER-ADMIN"})
 @SpringBootTest(classes = {
     SecurityBeanOverrideConfiguration.class,
@@ -50,10 +49,10 @@ public class OneTimePasswordServiceImplTest {
     @Autowired
     private OneTimePasswordServiceImpl oneTimePasswordService;
 
-    @MockBean
+    @MockitoBean
     private OneTimePasswordRepository oneTimePasswordRepository;
 
-    @MockBean
+    @MockitoBean
     private OtpSpecService otpSpecService;
 
     @Test
@@ -69,7 +68,7 @@ public class OneTimePasswordServiceImplTest {
         when(oneTimePasswordRepository.findAll()).thenReturn(otpList);
         List<OneTimePasswordDto> dtoList = oneTimePasswordService.findAll();
 
-        Assert.assertSame(dtoList.size(), 2);
+        Assertions.assertSame(dtoList.size(), 2);
         verify(oneTimePasswordRepository, times(1)).findAll();
     }
 
@@ -80,8 +79,8 @@ public class OneTimePasswordServiceImplTest {
         when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(oneTimePassword));
         Optional<OneTimePasswordDto> dto = oneTimePasswordService.findOne(1L);
 
-        Assert.assertTrue(dto.isPresent());
-        Assert.assertSame(dto.get().getId(), 1L);
+        Assertions.assertTrue(dto.isPresent());
+        Assertions.assertSame(dto.get().getId(), 1L);
         verify(oneTimePasswordRepository, times(1)).findById(1L);
     }
 
@@ -92,131 +91,149 @@ public class OneTimePasswordServiceImplTest {
         verify(oneTimePasswordRepository, times(1)).deleteById(1L);
     }
 
-    @Test(expected = InvalidPasswordException.class)
+    @Test
     public void shouldThrowInvalidPasswordException() {
-        OneTimePasswordCheckDto dto = new OneTimePasswordCheckDto();
-
-        oneTimePasswordService.check(dto);
+        assertThrows(InvalidPasswordException.class, () -> {
+            OneTimePasswordCheckDto dto = new OneTimePasswordCheckDto();
+    
+            oneTimePasswordService.check(dto);
+        });
     }
 
-    @Test(expected = ExpiredOtpException.class)
+    @Test
     public void shouldThrowExpiredOtpException() {
-        OneTimePassword otp = buildOtp();
-        otp.endDate(Instant.now().minus(1, ChronoUnit.DAYS));
-
-        OneTimePasswordCheckDto dto = buildDto();
-
-        when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
-        OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(true);
-
-        when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
-
-        oneTimePasswordService.check(dto);
+        assertThrows(ExpiredOtpException.class, () -> {
+            OneTimePassword otp = buildOtp();
+            otp.endDate(Instant.now().minus(1, ChronoUnit.DAYS));
+    
+            OneTimePasswordCheckDto dto = buildDto();
+    
+            when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
+            OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(true);
+    
+            when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
+    
+            oneTimePasswordService.check(dto);
+        });
     }
 
-    @Test(expected = InvalidPasswordException.class)
+    @Test
     public void shouldNotThrowExpiredOtpException() {
-        OneTimePassword otp = buildOtp();
-        otp.endDate(Instant.now().minus(1, ChronoUnit.DAYS));
-
-        OneTimePasswordCheckDto dto = buildDto();
-
-        when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
-        OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(false);
-
-        when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
-
-        oneTimePasswordService.check(dto);
+        assertThrows(InvalidPasswordException.class, () -> {
+            OneTimePassword otp = buildOtp();
+            otp.endDate(Instant.now().minus(1, ChronoUnit.DAYS));
+    
+            OneTimePasswordCheckDto dto = buildDto();
+    
+            when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
+            OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(false);
+    
+            when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
+    
+            oneTimePasswordService.check(dto);
+        });
     }
 
-    @Test(expected = IllegalOtpStateException.class)
+    @Test
     public void shouldThrowIllegalOtpStateException() {
-        OneTimePassword otp = buildOtp();
-        otp.stateKey(StateKey.EXPIRED);
-
-        OneTimePasswordCheckDto dto = buildDto();
-
-        when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
-        OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(true);
-
-        when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
-
-        oneTimePasswordService.check(dto);
+        assertThrows(IllegalOtpStateException.class, () -> {
+            OneTimePassword otp = buildOtp();
+            otp.stateKey(StateKey.EXPIRED);
+    
+            OneTimePasswordCheckDto dto = buildDto();
+    
+            when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
+            OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(true);
+    
+            when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
+    
+            oneTimePasswordService.check(dto);
+        });
     }
 
-    @Test(expected = InvalidPasswordException.class)
+    @Test
     public void shouldNotThrowIllegalOtpStateException() {
-        OneTimePassword otp = buildOtp();
-        otp.stateKey(StateKey.EXPIRED);
-
-        OneTimePasswordCheckDto dto = buildDto();
-
-        when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
-        OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(false);
-
-        when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
-
-        oneTimePasswordService.check(dto);
+        assertThrows(InvalidPasswordException.class, () -> {
+            OneTimePassword otp = buildOtp();
+            otp.stateKey(StateKey.EXPIRED);
+    
+            OneTimePasswordCheckDto dto = buildDto();
+    
+            when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
+            OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(false);
+    
+            when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
+    
+            oneTimePasswordService.check(dto);
+        });
     }
 
-    @Test(expected = MaxOtpAttemptsExceededException.class)
+    @Test
     public void shouldThrowMaxOtpAttemptsExceededException() {
-        OneTimePassword otp = buildOtp();
-        otp.retries(5);
-
-        OneTimePasswordCheckDto dto = buildDto();
-
-        when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
-        OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(true);
-
-        when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
-
-        oneTimePasswordService.check(dto);
+        assertThrows(MaxOtpAttemptsExceededException.class, () -> {
+            OneTimePassword otp = buildOtp();
+            otp.retries(5);
+    
+            OneTimePasswordCheckDto dto = buildDto();
+    
+            when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
+            OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(true);
+    
+            when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
+    
+            oneTimePasswordService.check(dto);
+        });
     }
 
-    @Test(expected = InvalidPasswordException.class)
+    @Test
     public void shouldNotThrowMaxOtpAttemptsExceededException() {
-        OneTimePassword otp = buildOtp();
-        otp.retries(5);
-
-        OneTimePasswordCheckDto dto = buildDto();
-
-        when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
-        OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(false);
-
-        when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
-
-        oneTimePasswordService.check(dto);
+        assertThrows(InvalidPasswordException.class, () -> {
+            OneTimePassword otp = buildOtp();
+            otp.retries(5);
+    
+            OneTimePasswordCheckDto dto = buildDto();
+    
+            when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
+            OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(false);
+    
+            when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
+    
+            oneTimePasswordService.check(dto);
+        });
     }
 
-    @Test(expected = OtpNotMatchedException.class)
+    @Test
     public void shouldThrowOtpNotMatchedException() {
-        OneTimePassword otp = buildOtp();
-        otp.setPasswordHash("1111");
-
-        OneTimePasswordCheckDto dto = buildDto();
-
-        when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
-        OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(true);
-
-        when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
-
-        oneTimePasswordService.check(dto);
+        assertThrows(OtpNotMatchedException.class, () -> {
+            OneTimePassword otp = buildOtp();
+            otp.setPasswordHash("1111");
+    
+            OneTimePasswordCheckDto dto = buildDto();
+    
+            when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
+            OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(true);
+    
+            when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
+    
+            oneTimePasswordService.check(dto);
+        });
     }
 
-    @Test(expected = InvalidPasswordException.class)
+    @Test
     public void shouldNotThrowOtpNotMatchedException() {
-        OneTimePassword otp = buildOtp();
-        otp.setPasswordHash("1111");
-
-        OneTimePasswordCheckDto dto = buildDto();
-
-        when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
-        OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(false);
-
-        when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
-
-        oneTimePasswordService.check(dto);
+        assertThrows(InvalidPasswordException.class, () -> {
+            OneTimePassword otp = buildOtp();
+            otp.setPasswordHash("1111");
+    
+            OneTimePasswordCheckDto dto = buildDto();
+    
+            when(oneTimePasswordRepository.findById(1L)).thenReturn(Optional.of(otp));
+            OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(false);
+    
+            when(otpSpecService.getOtpTypeSpec(any())).thenReturn(spec);
+    
+            oneTimePasswordService.check(dto);
+        });
     }
 
     private static OneTimePassword buildOtp() {

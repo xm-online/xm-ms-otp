@@ -1,6 +1,6 @@
 package com.icthh.xm.ms.otp.repository;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.icthh.xm.ms.otp.OtpApp;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
@@ -8,16 +8,13 @@ import com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey;
 import com.icthh.xm.ms.otp.domain.enumeration.StateKey;
 import groovy.util.logging.Slf4j;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Random;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = {OtpApp.class})
 public class OneTimePasswordRepositoryTest {
 
@@ -26,11 +23,12 @@ public class OneTimePasswordRepositoryTest {
 
     @Test
     public void testFindTopByReceiverOrderByStartDateDesc_shouldReturnLatestOTP() throws InterruptedException {
-        Instant now = Instant.now();
+        // the database keeps microseconds (rounded), Instant.now() on Linux with Java 15+ has nanoseconds
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         Thread.sleep(10L); // just in case the test executes the code too fast
-        Instant nowTwo = Instant.now();
+        Instant nowTwo = Instant.now().truncatedTo(ChronoUnit.MICROS);
         Thread.sleep(10L); // just in case the test executes the code too fast
-        Instant nowThree = Instant.now();
+        Instant nowThree = Instant.now().truncatedTo(ChronoUnit.MICROS);
 
         String receiver = "123";
         OneTimePassword first = oneTimePassword(receiver, now);
@@ -44,8 +42,9 @@ public class OneTimePasswordRepositoryTest {
 
     private OneTimePassword oneTimePassword(String receiver, Instant startDate) {
         Instant endDate = startDate.plusSeconds(120L);
+        // no preset id: Hibernate 6.6+ rejects merging a new entity whose generated id is already set
         return new OneTimePassword(
-            new Random().nextLong(),
+            null,
             receiver,
             ReceiverTypeKey.NAME,
             "typeKey",

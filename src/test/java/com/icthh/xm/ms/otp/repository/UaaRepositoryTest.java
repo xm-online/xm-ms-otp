@@ -8,18 +8,16 @@ import com.icthh.xm.ms.otp.config.SecurityBeanOverrideConfiguration;
 import com.icthh.xm.ms.otp.config.tenant.WebappTenantOverrideConfiguration;
 import com.icthh.xm.ms.otp.service.UaaService;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.support.RestGatewaySupport;
@@ -27,7 +25,7 @@ import org.springframework.web.client.support.RestGatewaySupport;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
@@ -37,7 +35,6 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @WithMockUser(authorities = {"SUPER-ADMIN"})
 @SpringBootTest(classes = {
     SecurityBeanOverrideConfiguration.class,
@@ -53,12 +50,12 @@ public class UaaRepositoryTest {
     @Qualifier("internalRestTemplate")
     private RestTemplate restTemplate;
 
-    @MockBean
+    @MockitoBean
     RestTemplateCustomizer restTemplateCustomizer;
 
     MockRestServiceServer mockServer;
 
-    @Before
+    @BeforeEach
     public void beforeClass(){
         RestGatewaySupport gateway = new RestGatewaySupport();
         gateway.setRestTemplate(restTemplate);

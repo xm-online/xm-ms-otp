@@ -1,6 +1,7 @@
 language: java
 jdk:
-- openjdk11
+- openjdk25
+dist: jammy
 install: true
 addons:
   sonarcloud:

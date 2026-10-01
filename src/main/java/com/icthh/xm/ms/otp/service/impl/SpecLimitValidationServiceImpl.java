@@ -12,7 +12,7 @@ import com.icthh.xm.ms.otp.web.rest.errors.InvalidPasswordException;
 import com.icthh.xm.ms.otp.web.rest.errors.MaxOtpAttemptsExceededException;
 import java.util.EnumMap;
 import java.util.List;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

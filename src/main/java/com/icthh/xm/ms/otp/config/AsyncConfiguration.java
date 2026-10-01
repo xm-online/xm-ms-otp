@@ -1,7 +1,7 @@
 package com.icthh.xm.ms.otp.config;
 
-import io.github.jhipster.async.ExceptionHandlingAsyncTaskExecutor;
-import io.github.jhipster.config.JHipsterProperties;
+import tech.jhipster.async.ExceptionHandlingAsyncTaskExecutor;
+import tech.jhipster.config.JHipsterProperties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ public class AsyncConfiguration implements AsyncConfigurer, SchedulingConfigurer
     }
 
     @Override
-    @Bean(name = "taskExecutor")
+    @Bean(name = {"applicationTaskExecutor", "taskExecutor"})
     public Executor getAsyncExecutor() {
         log.debug("Creating Async Task Executor");
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
