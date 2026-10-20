@@ -1,6 +1,7 @@
 package com.icthh.xm.ms.otp.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.icthh.xm.ms.otp.OtpApp;
 import com.icthh.xm.ms.otp.domain.OneTimePassword;
@@ -13,6 +14,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @Slf4j
 @SpringBootTest(classes = {OtpApp.class})
@@ -40,6 +42,21 @@ public class OneTimePasswordRepositoryTest {
         assertEquals(nowThree, newestOtp.getStartDate());
     }
 
+    @Test
+    public void testStaleOtpIsNotSaved() {
+        OneTimePassword saved = oneTimePasswordRepository.saveAndFlush(
+            oneTimePassword("456", Instant.now().truncatedTo(ChronoUnit.MICROS)));
+        OneTimePassword first = oneTimePasswordRepository.findById(saved.getId()).orElseThrow();
+        OneTimePassword stale = oneTimePasswordRepository.findById(saved.getId()).orElseThrow();
+
+        first.setRetries(first.getRetries() + 1);
+        oneTimePasswordRepository.saveAndFlush(first);
+
+        stale.setStateKey(StateKey.VERIFIED);
+        assertThrows(ObjectOptimisticLockingFailureException.class, () -> oneTimePasswordRepository.saveAndFlush(stale));
+        assertEquals(StateKey.ACTIVE, oneTimePasswordRepository.findById(saved.getId()).orElseThrow().getStateKey());
+    }
+
     private OneTimePassword oneTimePassword(String receiver, Instant startDate) {
         Instant endDate = startDate.plusSeconds(120L);
         // no preset id: Hibernate 6.6+ rejects merging a new entity whose generated id is already set
@@ -50,6 +67,7 @@ public class OneTimePasswordRepositoryTest {
             "typeKey",
             StateKey.ACTIVE,
             3,
+            null,
             startDate,
             endDate,
             "passwordHash"
