@@ -1,5 +1,6 @@
 package com.icthh.xm.ms.otp.web.rest;
 
+import com.icthh.xm.commons.exceptions.BusinessException;
 import com.icthh.xm.commons.permission.annotation.PrivilegeDescription;
 import com.icthh.xm.commons.security.XmAuthenticationContextHolder;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
@@ -153,7 +154,7 @@ public class OneTimePasswordResource {
 
     private void assertRedirectUriAllowed(String redirectUri) {
         if (!otpSpecService.isRedirectUriAllowed(redirectUri)) {
-            throw new BadRequestAlertException("Redirect URI is not allowed", ENTITY_NAME, "redirecturinotallowed");
+            throw new BusinessException("error.redirect.uri.not.allowed", "Redirect URI is not allowed");
         }
     }
 

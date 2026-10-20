@@ -624,7 +624,8 @@ public class OneTimePasswordResourceIntTest {
 
         restMockMvc
             .perform(validateRequest(otp, "http://evil.com/uaa/social/signin/otp"))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("error.redirect.uri.not.allowed"));
 
         verify(uaaRepository, never()).getOAuth2Token(anyMap());
         assertEquals(StateKey.ACTIVE, oneTimePasswordRepository.findById(otp.getId()).orElseThrow().getStateKey());

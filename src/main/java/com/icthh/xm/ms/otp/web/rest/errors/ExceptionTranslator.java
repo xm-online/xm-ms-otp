@@ -19,6 +19,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import com.icthh.xm.commons.exceptions.BusinessException;
 import com.icthh.xm.ms.otp.web.rest.util.HeaderUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -198,6 +199,14 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleNoSuchElementException(NoSuchElementException ex, NativeWebRequest request) {
         return respond(withoutTitle(HttpStatus.NOT_FOUND, ErrorConstants.ENTITY_NOT_FOUND_TYPE.toString(), request),
             HttpStatus.NOT_FOUND, new HttpHeaders());
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Object> handleBusinessException(BusinessException ex, NativeWebRequest request) {
+        int status = HttpStatus.BAD_REQUEST.value();
+        Map<String, Object> body = withMessage(status, reasonPhrase(status), ex.getMessage(), request);
+        body.put(MESSAGE_KEY, ex.getCode());
+        return respond(body, HttpStatus.BAD_REQUEST, new HttpHeaders());
     }
 
     @ExceptionHandler
