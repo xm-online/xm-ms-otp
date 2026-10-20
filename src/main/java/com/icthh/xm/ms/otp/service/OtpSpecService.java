@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -59,6 +60,19 @@ public class OtpSpecService implements RefreshableConfiguration {
             );
         }
         return otpType;
+    }
+
+    public boolean isRedirectUriAllowed(String redirectUri) {
+        if (appProps.isUnsafeRedirectsAllowed()) {
+            return true;
+        }
+        String target = withoutQuery(redirectUri);
+        return Optional.ofNullable(getOtpSpec().getRedirectUris()).orElse(List.of()).stream()
+            .anyMatch(target::equals);
+    }
+
+    private static String withoutQuery(String uri) {
+        return uri.split("[?#]", 2)[0];
     }
 
     @Override

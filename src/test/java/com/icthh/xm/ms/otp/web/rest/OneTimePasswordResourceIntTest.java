@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -50,6 +52,7 @@ import com.icthh.xm.ms.otp.web.rest.errors.ExceptionTranslator;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
@@ -111,6 +114,7 @@ public class OneTimePasswordResourceIntTest {
     private static final String DISCLOSED_ERROR_AND_LIMIT_TYPE_KEY = "DISCLOSED_ERROR_AND_LIMIT_TYPE_KEY";
     private static final String OTP_SENDER_ID = "Voodaphone";
     public static final String DEFAULT_OTP = "123";
+    private static final String ALLOWED_REDIRECT_URI = "http://localhost:4200/uaa/social/signin/otp";
 
     private MockMvc restMockMvc;
 
@@ -178,8 +182,10 @@ public class OneTimePasswordResourceIntTest {
         TenantContextUtils.setTenant(tenantContextHolder, "XM");
 
         MockitoAnnotations.openMocks(this);
-        OneTimePasswordServiceImpl oneTimePasswordService = getOneTimePasswordService();
-        OneTimePasswordResource otp = new OneTimePasswordResource(oneTimePasswordService, uaaRepository, authenticationContextHolder);
+        OtpSpecService testOtpSpecService = getOtpSpecService();
+        OneTimePasswordServiceImpl oneTimePasswordService = getOneTimePasswordService(testOtpSpecService);
+        OneTimePasswordResource otp = new OneTimePasswordResource(oneTimePasswordService, uaaRepository,
+            authenticationContextHolder, testOtpSpecService);
         this.restMockMvc = MockMvcBuilders.standaloneSetup(otp)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -187,7 +193,7 @@ public class OneTimePasswordResourceIntTest {
             .setMessageConverters(new JacksonJsonHttpMessageConverter(jsonMapper)).build();
     }
 
-    private OneTimePasswordServiceImpl getOneTimePasswordService() {
+    private OtpSpecService getOtpSpecService() {
         OtpSpecService otpSpecService = new OtpSpecService(applicationProperties);
         OtpSpec otpSpec = new OtpSpec();
         otpSpec.setTypes(List.of(
@@ -197,7 +203,12 @@ public class OneTimePasswordResourceIntTest {
             getOtpTypeSpec(VALID_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(DB, 1800, 1), false),
             getOtpTypeSpec(DISCLOSED_ERROR_AND_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(DB, 1800, 1), true)
         ));
+        otpSpec.setRedirectUris(List.of(ALLOWED_REDIRECT_URI));
         otpSpecService.setOtpSpec(otpSpec);
+        return otpSpecService;
+    }
+
+    private OneTimePasswordServiceImpl getOneTimePasswordService(OtpSpecService otpSpecService) {
         return new OneTimePasswordServiceImpl(
             otpSpecService,
             oneTimePasswordRepository,
@@ -581,7 +592,7 @@ public class OneTimePasswordResourceIntTest {
     public void validateOtpTokenMustReturnCodeParameterInRedirect() throws Exception {
 
         String token = UUID.randomUUID().toString();
-        String redirectUrl = "http%3A%2F%2Flocalhost%3A4200%2Fuaa%2Fsocial%2Fsignin%2Fotp";
+        String redirectUrl = URLEncoder.encode(ALLOWED_REDIRECT_URI, StandardCharsets.UTF_8);
         when(uaaRepository.getOAuth2Token(anyMap())).thenReturn(token);
 
         //init DB
@@ -604,6 +615,60 @@ public class OneTimePasswordResourceIntTest {
             .andExpect(MockMvcResultMatchers.handler().methodName("checkOneTimePasswordAndRedirectWithCode"))
             .andReturn();
 
+    }
+
+    @Test
+    @Transactional
+    public void validateOtpTokenMustRejectNotAllowedRedirect() throws Exception {
+        OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
+
+        restMockMvc
+            .perform(validateRequest(otp, "http://evil.com/uaa/social/signin/otp"))
+            .andExpect(status().isBadRequest());
+
+        verify(uaaRepository, never()).getOAuth2Token(anyMap());
+        assertEquals(StateKey.ACTIVE, oneTimePasswordRepository.findById(otp.getId()).orElseThrow().getStateKey());
+    }
+
+    @Test
+    @Transactional
+    public void validateOtpTokenMustRejectAllowedRedirectWithOtherAuthority() throws Exception {
+        OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
+
+        restMockMvc
+            .perform(validateRequest(otp, "http://localhost:4200@evil.com/uaa/social/signin/otp"))
+            .andExpect(status().isBadRequest());
+
+        verify(uaaRepository, never()).getOAuth2Token(anyMap());
+    }
+
+    @Test
+    @Transactional
+    public void validateOtpTokenMustAllowAnyRedirectWhenUnsafeRedirectsAllowed() throws Exception {
+        String token = UUID.randomUUID().toString();
+        String redirectUrl = "http://evil.com/callback";
+        when(uaaRepository.getOAuth2Token(anyMap())).thenReturn(token);
+        applicationProperties.setUnsafeRedirectsAllowed(true);
+        OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
+
+        try {
+            restMockMvc
+                .perform(validateRequest(otp, redirectUrl))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(redirectUrl + "?code=" + token));
+        } finally {
+            applicationProperties.setUnsafeRedirectsAllowed(false);
+        }
+    }
+
+    private MockHttpServletRequestBuilder validateRequest(OneTimePassword otp, String redirectUri) throws Exception {
+        OneTimePasswordCheckDto dto = new OneTimePasswordCheckDto();
+        dto.setId(otp.getId());
+        dto.setOtp(DEFAULT_OTP);
+        return post("/api/one-time-password/validate")
+            .contentType(APPLICATION_JSON_UTF8)
+            .header("redirect-uri", URLEncoder.encode(redirectUri, StandardCharsets.UTF_8))
+            .content(toJson(dto));
     }
 
 
