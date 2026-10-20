@@ -4,7 +4,6 @@ import com.icthh.xm.lep.api.LepKeyResolver;
 import com.icthh.xm.lep.api.LepMethod;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import java.util.List;
-import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,9 +16,6 @@ public class OtpTypeKeyResolver implements LepKeyResolver {
 
     @Override
     public List<String> segments(LepMethod method) {
-        // as before: the xm-commons 2 resolver required the parameter
-        OneTimePasswordDto otp = Objects.requireNonNull(method.getParameter("oneTimePasswordDto", OneTimePasswordDto.class),
-            "oneTimePasswordDto can't be null");
-        return List.of(otp.getTypeKey());
+        return List.of(method.getParameter("oneTimePasswordDto", OneTimePasswordDto.class).getTypeKey());
     }
 }
