@@ -1,8 +1,10 @@
 package com.icthh.xm.ms.otp.web.rest;
 
+import com.icthh.xm.commons.exceptions.BusinessException;
 import com.icthh.xm.commons.permission.annotation.PrivilegeDescription;
 import com.icthh.xm.commons.security.XmAuthenticationContextHolder;
 import com.icthh.xm.ms.otp.service.OneTimePasswordService;
+import com.icthh.xm.ms.otp.service.OtpSpecService;
 import com.icthh.xm.ms.otp.service.UaaService;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordCheckDto;
 import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
@@ -43,6 +45,7 @@ public class OneTimePasswordResource {
     private final OneTimePasswordService oneTimePasswordService;
     private final UaaService uaaRepository;
     private final XmAuthenticationContextHolder authenticationContextHolder;
+    private final OtpSpecService otpSpecService;
 
     @GetMapping(value = "/login", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView login() {
@@ -118,6 +121,7 @@ public class OneTimePasswordResource {
     public RedirectView checkOneTimePasswordAndRedirectWithCode(@Valid @RequestBody OneTimePasswordCheckDto oneTimePasswordCheckDto,
                                                                 @RequestHeader(value = "redirect-uri") String redirectUri) throws URISyntaxException {
         redirectUri = decodeUrl(redirectUri);
+        assertRedirectUriAllowed(redirectUri);
         checkOneTimePassword(oneTimePasswordCheckDto);
         OneTimePasswordDto dto = oneTimePasswordService.findOne(oneTimePasswordCheckDto.getId()).get();
         String code = uaaRepository.getOAuth2Token(of(RECEIVER, dto.getReceiver()));
@@ -146,6 +150,12 @@ public class OneTimePasswordResource {
         }
         String phoneNumber = login.get();
         return ResponseEntity.ok(of("phoneNumber", phoneNumber, "id", phoneNumber));
+    }
+
+    private void assertRedirectUriAllowed(String redirectUri) {
+        if (!otpSpecService.isRedirectUriAllowed(redirectUri)) {
+            throw new BusinessException("error.redirect.uri.not.allowed", "Redirect URI is not allowed");
+        }
     }
 
     @SneakyThrows

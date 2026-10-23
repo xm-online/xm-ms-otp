@@ -15,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.Instant;
@@ -58,6 +59,10 @@ public class OneTimePassword implements Serializable {
     @NotNull
     @Column(name = "retries", nullable = false)
     private Integer retries;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 
     @NotNull
     @Column(name = "start_date", nullable = false)

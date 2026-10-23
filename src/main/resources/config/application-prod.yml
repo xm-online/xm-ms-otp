@@ -97,8 +97,8 @@ jhipster:
         client-authorization:
             access-token-uri: http://uaa/oauth/token
             token-service-id: uaa
-            client-id: internal
-            client-secret: internal
+            client-id: webapp
+            client-secret: webapp
     mail: # specific JHipster mail property, for standard properties see MailProperties
         from: otp@localhost
         base-url: http://my-server-url-to-change # Modify according to your server's URL

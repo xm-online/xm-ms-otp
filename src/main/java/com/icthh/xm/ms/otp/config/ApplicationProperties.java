@@ -27,6 +27,10 @@ public class ApplicationProperties {
     private String tenantPath;
     private String dbSchemaSuffix;
     private String loginPage;
+    /**
+     * If true, redirect to any URI is allowed, redirect URIs from the OTP specification are not checked.
+     */
+    private boolean unsafeRedirectsAllowed;
     private final Retry retry = new Retry();
 
     private final Lep lep = new Lep();
