@@ -62,7 +62,7 @@ public class DBSpecLimitValidator implements SpecLimitValidator {
 
     private boolean isValidSpecLimit(OtpSpec.GenerationLimit generationLimit, String otpSpecKey) {
         if (generationLimit == null) {
-            log.debug("isValidSpecLimit: no limit configured for spec: {}", otpSpecKey);
+            log.warn("isValidSpecLimit: no limit configured for spec: {}", otpSpecKey);
             return false;
         }
         Integer periodSeconds = generationLimit.getPeriodSeconds();

@@ -155,6 +155,8 @@ xm-config:
 application:
     timeline-ignored-http-methods:
     login-page: /config/tenants/{tenantName}/otp/one-time-password-login.htm
+    # If true, redirect to any URI is allowed, redirectUris from otpspec.yml are not checked
+    unsafe-redirects-allowed: false
     kafka-enabled: true
     kafka-system-topic: system_topic
     kafka-system-queue: system_queue
