@@ -1,29 +1,23 @@
 package com.icthh.xm.ms.otp.config;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.servlet.InstrumentedFilter;
-import com.codahale.metrics.servlets.MetricsServlet;
-import io.github.jhipster.config.JHipsterConstants;
-import io.github.jhipster.config.JHipsterProperties;
-import io.undertow.Undertow;
-import io.undertow.Undertow.Builder;
-import io.undertow.UndertowOptions;
-
-import org.h2.server.web.WebServlet;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.mock.web.MockServletContext;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.xnio.OptionMap;
-
-import javax.servlet.*;
-import java.util.*;
+import tech.jhipster.config.JHipsterConstants;
+import tech.jhipster.config.JHipsterProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Unit tests for the WebConfigurer class.
+ * The Dropwizard metrics and Undertow HTTP/2 checks went away with that code (Micrometer and Tomcat in Spring Boot 4).
  *
  * @see WebConfigurer
  */
@@ -49,11 +44,7 @@ public class WebConfigurerTest {
 
     private JHipsterProperties props;
 
-    private MetricRegistry metricRegistry;
-
-    private ServerProperties serverProperties;
-
-    @Before
+    @BeforeEach
     public void setup() {
         servletContext = spy(new MockServletContext());
         doReturn(mock(FilterRegistration.Dynamic.class))
@@ -64,10 +55,7 @@ public class WebConfigurerTest {
         env = new MockEnvironment();
         props = new JHipsterProperties();
 
-        serverProperties = new ServerProperties();
-        webConfigurer = new WebConfigurer(env, props, serverProperties);
-        metricRegistry = new MetricRegistry();
-        webConfigurer.setMetricRegistry(metricRegistry);
+        webConfigurer = new WebConfigurer(env, props);
     }
 
     @Test
@@ -75,11 +63,7 @@ public class WebConfigurerTest {
         env.setActiveProfiles(JHipsterConstants.SPRING_PROFILE_PRODUCTION);
         webConfigurer.onStartup(servletContext);
 
-        assertThat(servletContext.getAttribute(InstrumentedFilter.REGISTRY_ATTRIBUTE)).isEqualTo(metricRegistry);
-        assertThat(servletContext.getAttribute(MetricsServlet.METRICS_REGISTRY)).isEqualTo(metricRegistry);
-        verify(servletContext).addFilter(eq("webappMetricsFilter"), any(InstrumentedFilter.class));
-        verify(servletContext).addServlet(eq("metricsServlet"), any(MetricsServlet.class));
-        verify(servletContext, never()).addServlet(eq("H2Console"), any(WebServlet.class));
+        verify(servletContext, never()).addServlet(eq("H2Console"), any(Servlet.class));
     }
 
     @Test
@@ -87,42 +71,22 @@ public class WebConfigurerTest {
         env.setActiveProfiles(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT);
         webConfigurer.onStartup(servletContext);
 
-        assertThat(servletContext.getAttribute(InstrumentedFilter.REGISTRY_ATTRIBUTE)).isEqualTo(metricRegistry);
-        assertThat(servletContext.getAttribute(MetricsServlet.METRICS_REGISTRY)).isEqualTo(metricRegistry);
-        verify(servletContext).addFilter(eq("webappMetricsFilter"), any(InstrumentedFilter.class));
-        verify(servletContext).addServlet(eq("metricsServlet"), any(MetricsServlet.class));
-        verify(servletContext).addServlet(eq("H2Console"), any(WebServlet.class));
+        verify(servletContext).addServlet(eq("H2Console"), any(Servlet.class));
     }
 
     @Test
     public void testCustomizeServletContainer() {
         env.setActiveProfiles(JHipsterConstants.SPRING_PROFILE_PRODUCTION);
-        UndertowServletWebServerFactory container = new UndertowServletWebServerFactory();
+        TomcatServletWebServerFactory container = new TomcatServletWebServerFactory();
         webConfigurer.customize(container);
-        assertThat(container.getMimeMappings().get("abs")).isEqualTo("audio/x-mpeg");
-        assertThat(container.getMimeMappings().get("html")).isEqualTo("text/html;charset=utf-8");
-        assertThat(container.getMimeMappings().get("json")).isEqualTo("text/html;charset=utf-8");
-
-        Builder builder = Undertow.builder();
-        container.getBuilderCustomizers().forEach(c -> c.customize(builder));
-        OptionMap.Builder serverOptions = (OptionMap.Builder) ReflectionTestUtils.getField(builder, "serverOptions");
-        assertThat(serverOptions.getMap().get(UndertowOptions.ENABLE_HTTP2)).isNull();
-    }
-
-    @Test
-    public void testUndertowHttp2Enabled() {
-        serverProperties.getHttp2().setEnabled(true);
-        UndertowServletWebServerFactory container = new UndertowServletWebServerFactory();
-        webConfigurer.customize(container);
-        Builder builder = Undertow.builder();
-        container.getBuilderCustomizers().forEach(c -> c.customize(builder));
-        OptionMap.Builder serverOptions = (OptionMap.Builder) ReflectionTestUtils.getField(builder, "serverOptions");
-        assertThat(serverOptions.getMap().get(UndertowOptions.ENABLE_HTTP2)).isTrue();
+        assertThat(container.getSettings().getMimeMappings().get("html")).isEqualTo("text/html;charset=utf-8");
+        assertThat(container.getSettings().getMimeMappings().get("json")).isEqualTo("text/html;charset=utf-8");
     }
 
     @Test
     public void testCorsFilterOnApiPath() throws Exception {
-        props.getCors().setAllowedOrigins(Collections.singletonList("*"));
+        // Spring 5.3+ rejects allowedOrigins "*" together with allowCredentials; the pattern is the replacement
+        props.getCors().setAllowedOriginPatterns(Collections.singletonList("*"));
         props.getCors().setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
         props.getCors().setAllowedHeaders(Collections.singletonList("*"));
         props.getCors().setMaxAge(1800L);

@@ -11,8 +11,8 @@ if (project.hasProperty("no-liquibase")) {
     profiles += ",no-liquibase"
 }
 
-if (project.hasProperty("swagger")) {
-    profiles += ",swagger"
+if (project.hasProperty("api-docs")) {
+    profiles += ",api-docs"
 }
 
 springBoot {
@@ -48,9 +48,5 @@ generateGitProperties {
     onlyIf {
         !source.isEmpty()
     }
-}
-
-gitProperties {
-    keys = ["git.branch", "git.commit.id.abbrev", "git.commit.id.describe"]
 }
 

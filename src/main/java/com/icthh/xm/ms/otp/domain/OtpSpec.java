@@ -16,6 +16,13 @@ import lombok.NoArgsConstructor;
 public class OtpSpec {
     private List<OtpTypeSpec> types;
 
+    /**
+     * Allowed redirect URIs for {@code /api/one-time-password/validate}.
+     * <p>
+     * The redirect URI from the request is compared without its query and fragment.
+     */
+    private List<String> redirectUris;
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor

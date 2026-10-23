@@ -13,7 +13,7 @@ import java.util.List;
  * Properties specific to Otp.
  * <p>
  * Properties are configured in the application.yml file.
- * See {@link io.github.jhipster.config.JHipsterProperties} for a good example.
+ * See {@link tech.jhipster.config.JHipsterProperties} for a good example.
  */
 @Getter
 @Setter
@@ -27,6 +27,10 @@ public class ApplicationProperties {
     private String tenantPath;
     private String dbSchemaSuffix;
     private String loginPage;
+    /**
+     * If true, redirect to any URI is allowed, redirect URIs from the OTP specification are not checked.
+     */
+    private boolean unsafeRedirectsAllowed;
     private final Retry retry = new Retry();
 
     private final Lep lep = new Lep();

@@ -1,6 +1,6 @@
 package com.icthh.xm.ms.otp.service.dto;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Objects;
 

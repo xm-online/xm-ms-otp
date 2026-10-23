@@ -1,6 +1,8 @@
 package com.icthh.xm.ms.otp.service.impl;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.icthh.xm.ms.otp.OtpApp;
 import com.icthh.xm.ms.otp.client.domain.CommunicationMessage;
@@ -12,14 +14,11 @@ import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
     SecurityBeanOverrideConfiguration.class,
     OtpApp.class,
@@ -104,12 +103,14 @@ public class RawCommunicationRequestStrategyTest {
         assertEquals("Это ваш otp password", result.getContent());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testPrepareRequestEmptyMessage() {
-        OtpSpec.OtpTypeSpec otpTypeSpec = generateOtpTypeSpec();
-        otpTypeSpec.setMessage(null);
-
-        requestStrategy.prepareRequest(PASSWORD, otpTypeSpec, new OneTimePasswordDto());
+        assertThrows(IllegalStateException.class, () -> {
+            OtpSpec.OtpTypeSpec otpTypeSpec = generateOtpTypeSpec();
+            otpTypeSpec.setMessage(null);
+    
+            requestStrategy.prepareRequest(PASSWORD, otpTypeSpec, new OneTimePasswordDto());
+        });
     }
 
     private OtpSpec.OtpTypeSpec generateOtpTypeSpec() {

@@ -1,5 +1,7 @@
 package com.icthh.xm.ms.otp.service;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import static org.mockito.Mockito.when;
 
 import com.icthh.xm.ms.otp.OtpApp;
@@ -13,17 +15,14 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit4.SpringRunner;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @WithMockUser(authorities = {"SUPER-ADMIN"})
 @SpringBootTest(classes = {
     SecurityBeanOverrideConfiguration.class,
@@ -32,7 +31,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 })
 public class OtpSpecServiceTest {
 
-    @MockBean
+    @MockitoBean
     private ApplicationProperties appProps;
 
     @Autowired
@@ -55,41 +54,45 @@ public class OtpSpecServiceTest {
         otpSpec.setTypes(types);
         otpSpecService.setOtpSpec(otpSpec);
         OtpSpec.OtpTypeSpec type = otpSpecService.getOtpTypeSpec("TYPE1");
-        Assert.assertEquals(type, type1);
+        Assertions.assertEquals(type, type1);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testGetOtpTypeSpecProfileNotFound() {
-        OtpSpec otpSpec = new OtpSpec();
-        otpSpec.setTypes(Collections.emptyList());
-        otpSpecService.setOtpSpec(otpSpec);
-        otpSpecService.getOtpTypeSpec("TYPE1");
+        assertThrows(IllegalArgumentException.class, () -> {
+            OtpSpec otpSpec = new OtpSpec();
+            otpSpec.setTypes(Collections.emptyList());
+            otpSpecService.setOtpSpec(otpSpec);
+            otpSpecService.getOtpTypeSpec("TYPE1");
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testOnInit() {
-        when(appProps.getSpecPath()).thenReturn("wrongKey");
-        otpSpecService.onInit("wrongKey", "configValue");
+        assertThrows(IllegalStateException.class, () -> {
+            when(appProps.getSpecPath()).thenReturn("wrongKey");
+            otpSpecService.onInit("wrongKey", "configValue");
+        });
     }
 
     @Test
     public void testIsListeningConfigurationSpec() {
         when(appProps.getSpecPath()).thenReturn("Key");
-        Assert.assertTrue(otpSpecService.isListeningConfiguration("Key"));
+        Assertions.assertTrue(otpSpecService.isListeningConfiguration("Key"));
     }
 
     @Test
     public void testIsListeningConfigurationTenant() {
         when(appProps.getSpecPath()).thenReturn("OtherKey");
         when(appProps.getTenantPath()).thenReturn("Key");
-        Assert.assertTrue(otpSpecService.isListeningConfiguration("Key"));
+        Assertions.assertTrue(otpSpecService.isListeningConfiguration("Key"));
     }
 
     @Test
     public void testIsListeningConfigurationOtherKey() {
         when(appProps.getSpecPath()).thenReturn("OtherKey");
         when(appProps.getTenantPath()).thenReturn("OtherKey");
-        Assert.assertFalse(otpSpecService.isListeningConfiguration("Key"));
+        Assertions.assertFalse(otpSpecService.isListeningConfiguration("Key"));
     }
 
 }

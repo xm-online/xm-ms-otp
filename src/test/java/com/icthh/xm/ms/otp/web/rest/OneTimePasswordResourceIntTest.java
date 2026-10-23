@@ -5,10 +5,12 @@ import static com.icthh.xm.ms.otp.domain.enumeration.ReceiverTypeKey.PHONE_NUMBE
 import static com.icthh.xm.ms.otp.service.dto.LimitValidationType.DB;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -47,10 +49,10 @@ import com.icthh.xm.ms.otp.service.impl.CommunicationMessageStrategyFactory;
 import com.icthh.xm.ms.otp.service.impl.OneTimePasswordServiceImpl;
 import com.icthh.xm.ms.otp.service.mapper.OneTimePasswordMapper;
 import com.icthh.xm.ms.otp.web.rest.errors.ExceptionTranslator;
-import feign.form.util.CharsetUtil;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
@@ -62,20 +64,18 @@ import java.util.UUID;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.jetbrains.annotations.NotNull;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
+import tools.jackson.databind.json.JsonMapper;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -90,7 +90,6 @@ import org.springframework.validation.Validator;
  * @see OneTimePasswordResource
  */
 @Slf4j
-@RunWith(SpringRunner.class)
 @WithMockUser(authorities = {"SUPER-ADMIN"})
 @SpringBootTest(classes = {
     SecurityBeanOverrideConfiguration.class,
@@ -115,6 +114,7 @@ public class OneTimePasswordResourceIntTest {
     private static final String DISCLOSED_ERROR_AND_LIMIT_TYPE_KEY = "DISCLOSED_ERROR_AND_LIMIT_TYPE_KEY";
     private static final String OTP_SENDER_ID = "Voodaphone";
     public static final String DEFAULT_OTP = "123";
+    private static final String ALLOWED_REDIRECT_URI = "http://localhost:4200/uaa/social/signin/otp";
 
     private MockMvc restMockMvc;
 
@@ -128,7 +128,7 @@ public class OneTimePasswordResourceIntTest {
     private ExceptionTranslator exceptionTranslator;
 
     @Autowired
-    private MappingJackson2HttpMessageConverter jacksonMessageConverter;
+    private JsonMapper jsonMapper;
 
     @Autowired
     private Validator validator;
@@ -148,10 +148,10 @@ public class OneTimePasswordResourceIntTest {
     @Autowired
     OtpSpecService otpSpecService;
 
-    @MockBean
+    @MockitoBean
     UaaService uaaRepository;
 
-    @MockBean
+    @MockitoBean
     XmAuthenticationContextHolder authenticationContextHolder;
 
     @Spy
@@ -177,21 +177,23 @@ public class OneTimePasswordResourceIntTest {
     }
 
     @SneakyThrows
-    @Before
+    @BeforeEach
     public void setup() {
         TenantContextUtils.setTenant(tenantContextHolder, "XM");
 
-        MockitoAnnotations.initMocks(this);
-        OneTimePasswordServiceImpl oneTimePasswordService = getOneTimePasswordService();
-        OneTimePasswordResource otp = new OneTimePasswordResource(oneTimePasswordService, uaaRepository, authenticationContextHolder);
+        MockitoAnnotations.openMocks(this);
+        OtpSpecService testOtpSpecService = getOtpSpecService();
+        OneTimePasswordServiceImpl oneTimePasswordService = getOneTimePasswordService(testOtpSpecService);
+        OneTimePasswordResource otp = new OneTimePasswordResource(oneTimePasswordService, uaaRepository,
+            authenticationContextHolder, testOtpSpecService);
         this.restMockMvc = MockMvcBuilders.standaloneSetup(otp)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
             .setValidator(validator)
-            .setMessageConverters(jacksonMessageConverter).build();
+            .setMessageConverters(new JacksonJsonHttpMessageConverter(jsonMapper)).build();
     }
 
-    private OneTimePasswordServiceImpl getOneTimePasswordService() {
+    private OtpSpecService getOtpSpecService() {
         OtpSpecService otpSpecService = new OtpSpecService(applicationProperties);
         OtpSpec otpSpec = new OtpSpec();
         otpSpec.setTypes(List.of(
@@ -201,7 +203,12 @@ public class OneTimePasswordResourceIntTest {
             getOtpTypeSpec(VALID_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(DB, 1800, 1), false),
             getOtpTypeSpec(DISCLOSED_ERROR_AND_LIMIT_TYPE_KEY, PHONE_NUMBER, null, emptyList(), new GenerationLimit(DB, 1800, 1), true)
         ));
+        otpSpec.setRedirectUris(List.of(ALLOWED_REDIRECT_URI));
         otpSpecService.setOtpSpec(otpSpec);
+        return otpSpecService;
+    }
+
+    private OneTimePasswordServiceImpl getOneTimePasswordService(OtpSpecService otpSpecService) {
         return new OneTimePasswordServiceImpl(
             otpSpecService,
             oneTimePasswordRepository,
@@ -211,7 +218,6 @@ public class OneTimePasswordResourceIntTest {
         );
     }
 
-    @NotNull
     private OtpTypeSpec getOtpTypeSpec(String typeKey,
                                        ReceiverTypeKey receiverTypeKey,
                                        String template,
@@ -255,7 +261,7 @@ public class OneTimePasswordResourceIntTest {
         MvcResult result = restMockMvc
             .perform(postContent)
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andReturn();
 
         String respStr = result.getResponse().getContentAsString();
@@ -286,7 +292,7 @@ public class OneTimePasswordResourceIntTest {
         MvcResult result = restMockMvc
             .perform(postContent)
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andReturn();
 
         String respStr = result.getResponse().getContentAsString();
@@ -317,7 +323,7 @@ public class OneTimePasswordResourceIntTest {
         MvcResult result = restMockMvc
             .perform(postContent)
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andReturn();
 
         String respStr = result.getResponse().getContentAsString();
@@ -343,7 +349,7 @@ public class OneTimePasswordResourceIntTest {
         MvcResult firstResult = restMockMvc
             .perform(firstRequestBody)
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andReturn();
 
         String respStr = firstResult.getResponse().getContentAsString();
@@ -380,7 +386,7 @@ public class OneTimePasswordResourceIntTest {
         MvcResult firstResult = restMockMvc
             .perform(firstRequestBody)
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andReturn();
 
         String respStr = firstResult.getResponse().getContentAsString();
@@ -421,7 +427,7 @@ public class OneTimePasswordResourceIntTest {
             .perform(postContent)
             .andExpect(status().isOk())
             .andExpect(MockMvcResultMatchers.handler().methodName("checkOneTimePassword"))
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andReturn();
 
         OneTimePassword newOtp = oneTimePasswordRepository.getOne(otp.getId());
@@ -441,7 +447,7 @@ public class OneTimePasswordResourceIntTest {
             .perform(get("/api/one-time-password/" + otp.getId()))
             .andExpect(status().isOk())
             .andExpect(MockMvcResultMatchers.handler().methodName("getOneTimePassword"))
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andReturn();
 
         OneTimePasswordDto otpResponse = toDto(result.getResponse().getContentAsString(), OneTimePasswordDto.class);
@@ -586,7 +592,7 @@ public class OneTimePasswordResourceIntTest {
     public void validateOtpTokenMustReturnCodeParameterInRedirect() throws Exception {
 
         String token = UUID.randomUUID().toString();
-        String redirectUrl = "http%3A%2F%2Flocalhost%3A4200%2Fuaa%2Fsocial%2Fsignin%2Fotp";
+        String redirectUrl = URLEncoder.encode(ALLOWED_REDIRECT_URI, StandardCharsets.UTF_8);
         when(uaaRepository.getOAuth2Token(anyMap())).thenReturn(token);
 
         //init DB
@@ -605,10 +611,65 @@ public class OneTimePasswordResourceIntTest {
         restMockMvc
             .perform(postContent)
             .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl(URLDecoder.decode(redirectUrl, CharsetUtil.UTF_8.name()) + "?code=" + token))
+            .andExpect(redirectedUrl(URLDecoder.decode(redirectUrl, StandardCharsets.UTF_8.name()) + "?code=" + token))
             .andExpect(MockMvcResultMatchers.handler().methodName("checkOneTimePasswordAndRedirectWithCode"))
             .andReturn();
 
+    }
+
+    @Test
+    @Transactional
+    public void validateOtpTokenMustRejectNotAllowedRedirect() throws Exception {
+        OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
+
+        restMockMvc
+            .perform(validateRequest(otp, "http://evil.com/uaa/social/signin/otp"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("error.redirect.uri.not.allowed"));
+
+        verify(uaaRepository, never()).getOAuth2Token(anyMap());
+        assertEquals(StateKey.ACTIVE, oneTimePasswordRepository.findById(otp.getId()).orElseThrow().getStateKey());
+    }
+
+    @Test
+    @Transactional
+    public void validateOtpTokenMustRejectAllowedRedirectWithOtherAuthority() throws Exception {
+        OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
+
+        restMockMvc
+            .perform(validateRequest(otp, "http://localhost:4200@evil.com/uaa/social/signin/otp"))
+            .andExpect(status().isBadRequest());
+
+        verify(uaaRepository, never()).getOAuth2Token(anyMap());
+    }
+
+    @Test
+    @Transactional
+    public void validateOtpTokenMustAllowAnyRedirectWhenUnsafeRedirectsAllowed() throws Exception {
+        String token = UUID.randomUUID().toString();
+        String redirectUrl = "http://evil.com/callback";
+        when(uaaRepository.getOAuth2Token(anyMap())).thenReturn(token);
+        applicationProperties.setUnsafeRedirectsAllowed(true);
+        OneTimePassword otp = oneTimePasswordRepository.saveAndFlush(createOtp());
+
+        try {
+            restMockMvc
+                .perform(validateRequest(otp, redirectUrl))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(redirectUrl + "?code=" + token));
+        } finally {
+            applicationProperties.setUnsafeRedirectsAllowed(false);
+        }
+    }
+
+    private MockHttpServletRequestBuilder validateRequest(OneTimePassword otp, String redirectUri) throws Exception {
+        OneTimePasswordCheckDto dto = new OneTimePasswordCheckDto();
+        dto.setId(otp.getId());
+        dto.setOtp(DEFAULT_OTP);
+        return post("/api/one-time-password/validate")
+            .contentType(APPLICATION_JSON_UTF8)
+            .header("redirect-uri", URLEncoder.encode(redirectUri, StandardCharsets.UTF_8))
+            .content(toJson(dto));
     }
 
 
@@ -626,7 +687,7 @@ public class OneTimePasswordResourceIntTest {
         MvcResult result = restMockMvc
             .perform(postContent)
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(MockMvcResultMatchers.handler().methodName("getUserInfo"))
             .andReturn();
 

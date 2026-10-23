@@ -12,29 +12,30 @@ buildscript {
 import org.apache.commons.configuration.PropertiesConfiguration
 
 
-task getProjectVersion {
+tasks.register('getProjectVersion') {
     doLast {
         println project.version
     }
 }
 
-task incrementProjectVersion {
+tasks.register('incrementProjectVersion') {
     doLast{
-        PropertiesConfiguration props = new PropertiesConfiguration('gradle.properties')
+        PropertiesConfiguration props = new PropertiesConfiguration(project.getProjectDir().absolutePath + '/gradle.properties')
         String version = props.getProperty("version")
         println "old version: " + version
         String [] vTokens = version.tokenize(".")
         String newVersion = "${vTokens[0]}.${vTokens[1]}.${vTokens[2].toInteger() + 1}".toString()
-        println "new version: " + newVersion 
+        println "new version: " + newVersion
         props.setProperty("version", newVersion)
         props.save()
     }
 
 }
 
-task decrementProjectVersion(dependsOn: configurations.compile) {
+tasks.register('decrementProjectVersion') {
+    dependsOn processResources
     doLast{
-        PropertiesConfiguration props = new PropertiesConfiguration('gradle.properties')
+        PropertiesConfiguration props = new PropertiesConfiguration(project.getProjectDir().absolutePath + '/gradle.properties')
         String version = props.getProperty("version")
         println "old version: " + version
         String newVersion = version
@@ -46,4 +47,4 @@ task decrementProjectVersion(dependsOn: configurations.compile) {
         props.setProperty("version", newVersion)
         props.save()
     }
-} 
+}

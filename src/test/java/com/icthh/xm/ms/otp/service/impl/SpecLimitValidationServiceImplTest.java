@@ -1,5 +1,7 @@
 package com.icthh.xm.ms.otp.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -13,16 +15,13 @@ import com.icthh.xm.ms.otp.service.dto.OneTimePasswordDto;
 import com.icthh.xm.ms.otp.web.rest.errors.InvalidPasswordException;
 import com.icthh.xm.ms.otp.web.rest.errors.OtpGenerationLimitReachedException;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit4.SpringRunner;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @WithMockUser(authorities = {"SUPER-ADMIN"})
 @SpringBootTest(classes = {
     SecurityBeanOverrideConfiguration.class,
@@ -34,31 +33,35 @@ public class SpecLimitValidationServiceImplTest {
     @Autowired
     SpecLimitValidationServiceImpl validationService;
 
-    @MockBean
+    @MockitoBean
     OneTimePasswordRepository repo;
 
-    @Test(expected = OtpGenerationLimitReachedException.class)
+    @Test
     public void shouldThrowOtpGenerationLimitReachedException() {
-        OneTimePasswordDto dto = new OneTimePasswordDto();
-        dto.setTypeKey("TEST-TYPE-KEY");
-
-        OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(true);
-        when(repo.countAllByReceiverAndTypeKeyAndStateKeyInAndStartDateGreaterThanEqual(any(), any(), any(), any()))
-            .thenReturn(5);
-
-        validationService.validateSpecificationLimit(dto, spec);
+        assertThrows(OtpGenerationLimitReachedException.class, () -> {
+            OneTimePasswordDto dto = new OneTimePasswordDto();
+            dto.setTypeKey("TEST-TYPE-KEY");
+    
+            OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(true);
+            when(repo.countAllByReceiverAndTypeKeyAndStateKeyInAndStartDateGreaterThanEqual(any(), any(), any(), any()))
+                .thenReturn(5);
+    
+            validationService.validateSpecificationLimit(dto, spec);
+        });
     }
 
-    @Test(expected = InvalidPasswordException.class)
+    @Test
     public void shouldNotThrowMaxOtpAttemptsExceededException() {
-        OneTimePasswordDto dto = new OneTimePasswordDto();
-        dto.setTypeKey("TEST-TYPE-KEY");
-
-        OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(false);
-        when(repo.countAllByReceiverAndTypeKeyAndStateKeyInAndStartDateGreaterThanEqual(any(), any(), any(), any()))
-            .thenReturn(5);
-
-        validationService.validateSpecificationLimit(dto, spec);
+        assertThrows(InvalidPasswordException.class, () -> {
+            OneTimePasswordDto dto = new OneTimePasswordDto();
+            dto.setTypeKey("TEST-TYPE-KEY");
+    
+            OtpSpec.OtpTypeSpec spec = buildOtpTypeSpec(false);
+            when(repo.countAllByReceiverAndTypeKeyAndStateKeyInAndStartDateGreaterThanEqual(any(), any(), any(), any()))
+                .thenReturn(5);
+    
+            validationService.validateSpecificationLimit(dto, spec);
+        });
     }
 
     private static OtpSpec.OtpTypeSpec buildOtpTypeSpec(boolean discloseCheckError) {
