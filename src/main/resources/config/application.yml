@@ -165,7 +165,7 @@ application:
         max-attempts: 3
         delay: 1000 #in milliseconds
         multiplier: 2
-    tenant-ignored-path-list: /swagger-resources/configuration/ui, /management/health, /management/health/liveness, /management/health/readiness, /oauth/token_key, /h2-console, /v3/api-docs
+    tenant-ignored-path-list: /swagger-resources/configuration/ui, /management/health, /management/health/liveness, /management/health/readiness, /oauth/token_key, /h2-console, /v3/api-docs, /error
     timelines-enabled: true
     spec-path: /config/tenants/XM/otp/otpspec.yml
     tenant-path: /config/tenants/XM/tenant-config.yml
