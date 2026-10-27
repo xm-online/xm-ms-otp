@@ -90,6 +90,7 @@ spring:
         mode: HTML
     liquibase:
         default-schema: XM
+    # Kafka connection by environment variables, PLAINTEXT when not set: https://github.com/xm-online/xm-ms-template/blob/main/README.md#kafka-connection
 
 server:
     servlet:
@@ -164,7 +165,7 @@ application:
         max-attempts: 3
         delay: 1000 #in milliseconds
         multiplier: 2
-    tenant-ignored-path-list: /swagger-resources/configuration/ui, /management/health, /oauth/token_key, /h2-console, /v3/api-docs
+    tenant-ignored-path-list: /swagger-resources/configuration/ui, /management/health, /management/health/liveness, /management/health/readiness, /oauth/token_key, /h2-console, /v3/api-docs
     timelines-enabled: true
     spec-path: /config/tenants/XM/otp/otpspec.yml
     tenant-path: /config/tenants/XM/tenant-config.yml
@@ -172,3 +173,6 @@ application:
     lep:
         tenant-script-storage: XM_MS_CONFIG
         lep-resource-path-pattern: /config/tenants/{tenantName}/entity/lep/resources/**/*
+    api-docs:
+        privilege-check: true
+    config-private-key: # APPLICATION_CONFIG_PRIVATE_KEY=MC4CAQAwBQYDK2VwBCIE..., base64 PKCS#8 Ed25519 private key for the private config API of xm-ms-config, required without the profile migration
