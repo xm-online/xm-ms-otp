@@ -1,5 +1,6 @@
 package com.icthh.xm.ms.otp.config;
 
+import com.icthh.xm.commons.config.XmCommonsApplicationProperties;
 import com.icthh.xm.commons.lep.TenantScriptStorage;
 import lombok.Data;
 import lombok.Getter;
@@ -18,7 +19,7 @@ import java.util.List;
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "application", ignoreUnknownFields = false)
-public class ApplicationProperties {
+public class ApplicationProperties extends XmCommonsApplicationProperties {
     private String kafkaSystemTopic;
     private String kafkaSystemQueue;
     private boolean kafkaEnabled;
@@ -51,5 +52,4 @@ public class ApplicationProperties {
         private TenantScriptStorage tenantScriptStorage;
         private String lepResourcePathPattern;
     }
-
 }
